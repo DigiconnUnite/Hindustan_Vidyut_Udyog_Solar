@@ -1,10 +1,11 @@
 <?php
 /**
  * Breadcrumb page banner for inner pages.
- * Expects: $bannerTitle (string), optional $bannerSubtitle (string), optional $bannerExtra (raw HTML).
+ * Expects: $bannerTitle (string), optional $bannerSubtitle (string), optional $bannerExtra (raw HTML), optional $bannerImage (string path).
  */
+$bannerImage ??= '/assets/images/page-banner.png';
 ?>
-<section class="relative m-3 rounded-3xl overflow-hidden bg-cover bg-center py-24 md:py-32" style="background-image:url('/assets/images/page-banner.png')">
+<section class="relative m-3 rounded-3xl overflow-hidden bg-cover bg-center py-24 md:py-32" style="background-image:url('<?= e($bannerImage) ?>')">
   <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent"></div>
   <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/10 to-transparent"></div>
 

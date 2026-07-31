@@ -3,6 +3,7 @@ require_once __DIR__ . '/config/helpers.php';
 $pageTitle = 'PM Surya Ghar Muft Bijli Yojana — Hindustan Vidyut Udyog Solar';
 $bannerTitle = 'PM Surya Ghar Muft Bijli Yojana';
 $bannerSubtitle = 'Get up to ₹78,000 central government subsidy on your rooftop solar system — we handle the paperwork.';
+$bannerImage = '/assets/images/pm-surya-ghar-banner.png';
 require __DIR__ . '/components/header.php';
 require __DIR__ . '/components/page-banner.php';
 ?>
