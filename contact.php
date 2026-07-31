@@ -26,16 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $pageTitle = 'Support & Contact — Hindustan Vidyut Udyog Solar';
 $prefillProduct = trim($_GET['product'] ?? '');
+$prefillSubject = trim($_GET['subject'] ?? '');
+$bannerTitle = 'Support & Contact';
+$bannerSubtitle = 'Have a question or want a free quote? Reach out below.';
 
 require __DIR__ . '/components/header.php';
+require __DIR__ . '/components/page-banner.php';
 ?>
-
-<section class="bg-primary-50/60 py-16">
-  <div class="mx-auto container px-6 text-center">
-    <h1 class="text-4xl font-bold text-gray-900">Support &amp; Contact</h1>
-    <p class="mt-3 text-gray-600 max-w-2xl mx-auto">Have a question or want a free quote? Reach out below.</p>
-  </div>
-</section>
 
 <section class="mx-auto container px-6 py-16 grid gap-10 md:grid-cols-2">
   <div class="card">
@@ -60,9 +57,15 @@ require __DIR__ . '/components/header.php';
       </div>
       <div>
         <label class="text-sm font-medium text-gray-700">Message</label>
-        <textarea name="message" rows="4" class="input mt-1"><?= $prefillProduct ? e('Interested in: ' . $prefillProduct) : '' ?></textarea>
+        <textarea name="message" rows="4" class="input mt-1"><?php
+          if ($prefillProduct) {
+              echo e('Interested in: ' . $prefillProduct);
+          } elseif ($prefillSubject === 'pm-surya-ghar') {
+              echo e('I would like to check my eligibility for the PM Surya Ghar subsidy.');
+          }
+        ?></textarea>
       </div>
-      <button type="submit" class="btn-primary w-full">Send Request</button>
+      <button type="submit" class="btn-primary w-full justify-between">Send Request <span class="btn-icon"><?= icon('send', 'h-4 w-4') ?></span></button>
     </form>
   </div>
 

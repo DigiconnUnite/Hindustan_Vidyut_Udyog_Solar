@@ -44,6 +44,7 @@ Keep the admin panel intentionally small — team + job tracking only.
 ### 5. User Roles
 
 | Role | Access |
+
 |---|---|
 | **Admin** | Full access to admin portal: manage team members, manage/assign jobs, view leads, edit site content (products/services), manage settings |
 | **Staff / Technician** | Login to admin portal, view jobs assigned to them, update job status/notes only |

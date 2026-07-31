@@ -4,10 +4,16 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-accent-500 px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-accent-600;
+    @apply inline-flex items-center gap-3 rounded-full bg-accent-500 py-1.5 pl-6 pr-1.5 font-semibold text-white shadow-sm transition-colors hover:bg-accent-600;
   }
   .btn-outline {
-    @apply inline-flex items-center justify-center rounded-full border border-primary-600 px-6 py-3 font-semibold text-primary-700 transition-colors hover:bg-primary-50;
+    @apply inline-flex items-center gap-3 rounded-full border border-primary-600 py-1.5 pl-6 pr-1.5 font-semibold text-primary-700 transition-colors hover:bg-primary-50;
+  }
+  .btn-icon {
+    @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-accent-600;
+  }
+  .btn-outline .btn-icon {
+    @apply bg-primary-600 text-white;
   }
   .card {
     @apply rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5;

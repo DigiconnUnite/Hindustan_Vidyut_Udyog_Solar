@@ -19,6 +19,7 @@ module.exports = {
           500: '#f5a623',
           600: '#d6890f',
         },
+        ink: '#03130a',
       },
       borderRadius: {
         '2xl': '1rem',
