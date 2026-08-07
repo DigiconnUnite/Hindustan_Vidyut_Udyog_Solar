@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./*.php', './components/**/*.php', './admin/**/*.php'],
+  content: ['./*.php', './components/**/*.php', './admin/**/*.php', './assets/js/*.js'],
   theme: {
     extend: {
       fontFamily: {

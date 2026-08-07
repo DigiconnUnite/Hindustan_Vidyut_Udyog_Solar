@@ -23,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Hindustan Vidyut Udyog Solar — Residential Solar Installation';
-$transparentHeader = true;
 
 $services = db()->query('SELECT * FROM services ORDER BY sort_order LIMIT 4')->fetchAll();
 $products = db()->query('SELECT * FROM products WHERE is_active = 1 ORDER BY sort_order LIMIT 3')->fetchAll();
@@ -34,7 +33,7 @@ $posts = array_slice($posts, 0, 3);
 require __DIR__ . '/components/header.php';
 ?>
 
-<section id="hero" class="relative m-3 min-h-[calc(100vh-2rem)] rounded-3xl overflow-hidden">
+<section id="hero" class="relative  overflow-hidden">
   <div data-hero-bg class="absolute inset-0 bg-cover bg-center scale-110" style="background-image:url('/assets/images/hero-section-1.png')"></div>
   <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent"></div>
   <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/10 to-transparent"></div>
@@ -91,7 +90,7 @@ require __DIR__ . '/components/header.php';
     </div>
   </div> -->
 
-  <div data-hero-right class="md:absolute md:right-0 md:bottom-0 mx-6 mb-6 md:mx-0 md:mb-0 md:w-[min(90%,42rem)] rounded-3xl md:rounded-none md:rounded-tl-4xl bg-white p-3 md:p-0 md:pt-5 md:pl-5 shadow-lg grid gap-3 md:grid-cols-2">
+  <div data-hero-right class="md:absolute md:right-0 md:bottom-0 mx-6 mb-6 md:mx-0 md:mb-0 md:w-[min(90%,42rem)] rounded-3xl md:rounded-none md:rounded-tl-4xl bg-white p-3 md:p-0 md:px-5 md:pt-5 shadow-lg grid gap-3 md:grid-cols-2">
     <div class="rounded-3xl p-5 border border-gray-900 flex flex-col justify-between">
       <p class="text-sm text-gray-600">
         At Hindustan Vidyut Udyog, we power growth and sustainability.
@@ -290,7 +289,7 @@ require __DIR__ . '/components/header.php';
   <div class="grid gap-8 md:grid-cols-3">
     <?php foreach ($posts as $post): ?>
       <a href="/blog-details.php?slug=<?= urlencode($post['slug']) ?>" class="card group overflow-hidden p-3 flex flex-col border border-gray-900 shadow-none hover:bg-primary-50 transition-colors">
-        <div class="relative h-52 rounded-2xl bg-gray-100 overflow-hidden">
+        <div class="relative aspect-video rounded-2xl bg-gray-100 overflow-hidden">
           <img src="<?= e($post['image']) ?>" class="h-full w-full object-cover" alt="<?= e($post['title']) ?>">
           <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 text-xs font-semibold text-primary-700 shadow-sm">
             <?= icon('calendar', 'h-3.5 w-3.5') ?>

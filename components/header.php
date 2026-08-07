@@ -12,4 +12,4 @@
 </head>
 <body class="bg-white  text-gray-800 antialiased">
 <?php require __DIR__ . '/nav.php'; ?>
-<?php if (empty($transparentHeader)): ?><div class="h-[73px]"></div><?php endif; ?>
+<div id="header-spacer" class="h-[116px] md:h-[165px] transition-[height] duration-300"></div>

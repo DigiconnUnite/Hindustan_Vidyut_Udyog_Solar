@@ -5,7 +5,7 @@
  */
 $bannerImage ??= '/assets/images/page-banner.png';
 ?>
-<section class="relative m-3 rounded-3xl overflow-hidden bg-cover bg-center py-24 md:py-32" style="background-image:url('<?= e($bannerImage) ?>')">
+<section class="relative overflow-hidden bg-cover bg-center py-24 md:py-32" style="background-image:url('<?= e($bannerImage) ?>')">
   <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent"></div>
   <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/10 to-transparent"></div>
 

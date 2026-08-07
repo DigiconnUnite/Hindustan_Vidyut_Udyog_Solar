@@ -16,7 +16,7 @@ require __DIR__ . '/components/page-banner.php';
   <div class="grid gap-8 md:grid-cols-3">
     <?php foreach ($posts as $post): ?>
       <a href="/blog-details.php?slug=<?= urlencode($post['slug']) ?>" class="card group overflow-hidden p-3 flex flex-col border border-gray-900 shadow-none hover:bg-primary-50 transition-colors">
-        <div class="relative h-52 rounded-2xl bg-gray-100 overflow-hidden">
+        <div class="relative aspect-video rounded-2xl bg-gray-100 overflow-hidden">
           <img src="<?= e($post['image']) ?>" class="h-full w-full object-cover" alt="<?= e($post['title']) ?>">
           <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 text-xs font-semibold text-primary-700 shadow-sm">
             <?= icon('calendar', 'h-3.5 w-3.5') ?>
