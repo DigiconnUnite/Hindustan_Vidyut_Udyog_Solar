@@ -29,6 +29,7 @@ $products = db()->query('SELECT * FROM products WHERE is_active = 1 ORDER BY sor
 $posts = require __DIR__ . '/data/blog-posts.php';
 usort($posts, fn($a, $b) => strcmp($b['published_at'], $a['published_at']));
 $posts = array_slice($posts, 0, 3);
+$testimonials = require __DIR__ . '/data/testimonials.php';
 
 require __DIR__ . '/components/header.php';
 ?>
@@ -138,8 +139,10 @@ require __DIR__ . '/components/header.php';
   </div>
 </section>
 
-<section class="mx-3 my-3 rounded-3xl bg-ink px-6 py-16">
-  <div class="mx-auto container grid gap-8 md:grid-cols-2 items-center">
+<section class="relative mx-3 my-3 overflow-hidden rounded-3xl bg-ink bg-cover bg-center px-6 py-16"
+         style="background-image:url('/assets/images/pm-surya-ghar-banner.png')">
+  <div class="absolute inset-0 bg-ink/85"></div>
+  <div class="relative mx-auto container grid gap-8 md:grid-cols-2 items-center">
     <div>
       <span class="inline-flex rounded-full border border-accent-400/50 text-accent-400 text-sm font-medium px-4 py-1.5">
         Government Scheme
@@ -230,6 +233,53 @@ require __DIR__ . '/components/header.php';
           </div>
         </a>
       <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
+<section class="mx-auto container px-6 py-20">
+  <div class="grid gap-10 lg:grid-cols-[380px_1fr] items-stretch">
+    <img src="/assets/images/hero-section.png" alt="Our installation team on site"
+         class="hidden lg:block w-full h-full rounded-3xl object-cover bg-gray-100">
+
+    <div>
+      <span class="inline-flex rounded-full border border-gray-900 px-4 py-1.5 text-sm font-medium text-primary-700">
+        Powered by Trust and Results
+      </span>
+      <h2 class="mt-5 text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
+        What Our Clients Say Matters
+      </h2>
+      <p class="mt-4 text-gray-600 max-w-2xl">
+        Every <span class="font-semibold text-gray-900">Hindustan Vidyut Udyog</span> installation reflects the
+        trust and quality behind our work. Our customers' voices aren't just validation — they guide how we
+        keep improving.
+      </p>
+
+      <div class="mt-8 space-y-6">
+        <?php foreach ($testimonials as $t): ?>
+          <figure class="relative">
+            <span class="absolute -top-4 left-0 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent-500 text-ink text-3xl font-bold leading-none pt-2">&rdquo;</span>
+            <div class="rounded-3xl bg-ink pl-16 pr-8 py-7">
+              <blockquote class="text-white font-medium italic leading-relaxed">
+                &ldquo;<?= e($t['quote']) ?>&rdquo;
+              </blockquote>
+              <figcaption class="mt-6 flex items-center gap-4">
+                <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent-500 text-ink font-bold ring-2 ring-accent-400">
+                  <?php if (!empty($t['photo'])): ?>
+                    <img src="<?= e($t['photo']) ?>" alt="" class="h-full w-full object-cover">
+                  <?php else: ?>
+                    <?= e(mb_substr($t['name'], 0, 1)) ?>
+                  <?php endif; ?>
+                </span>
+                <span>
+                  <span class="block font-semibold text-white"><?= e($t['name']) ?></span>
+                  <span class="block text-sm text-accent-400"><?= e($t['role']) ?></span>
+                </span>
+              </figcaption>
+            </div>
+          </figure>
+        <?php endforeach; ?>
+      </div>
     </div>
   </div>
 </section>

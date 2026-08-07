@@ -43,7 +43,7 @@ $socials = ['facebook' => setting('social_facebook', '#'), 'twitter' => setting(
   <!-- Row 2: brand + actions -->
   <div class="flex items-center justify-between gap-4 px-6 py-3">
     <a href="/index.php" data-nav-anim class="flex items-center gap-3">
-      <img src="/assets/images/hvul.webp" alt="" class="h-14 w-auto">
+      <img src="/assets/images/hvul-logo.png" alt="" class="h-14 w-auto">
       <span class="border-l border-gray-200 pl-3">
         <span class="block font-bold text-lg leading-tight text-primary-700">Hindustan Vidyut Udyog</span>
         <span class="block text-xs tracking-wide text-gray-500">Solar &amp; Green Energy</span>

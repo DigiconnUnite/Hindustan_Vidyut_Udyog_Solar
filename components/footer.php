@@ -19,7 +19,7 @@ $footerSocials = [
   <!-- Row 1: brand + subscribe -->
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 px-6 py-6 border-b border-white/10">
     <a href="/index.php" class="flex items-center gap-3">
-      <img src="/assets/images/hvul.webp" alt="" class="h-14 w-auto">
+      <img src="/assets/images/hvul-logo.png" alt="" class="h-14 w-auto">
       <span class="border-l border-white/20 pl-3">
         <span class="block font-bold text-lg leading-tight text-white">Hindustan Vidyut Udyog</span>
         <span class="block text-xs tracking-wide text-gray-400">Solar &amp; Green Energy</span>
