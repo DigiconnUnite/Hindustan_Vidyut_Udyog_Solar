@@ -25,7 +25,6 @@ if (ribbon) {
 
 try {
   if (window.gsap) {
-    const navEls = document.querySelectorAll('[data-nav-anim]');
     const bg = document.querySelector('[data-hero-bg]');
     const title = document.querySelector('[data-hero-title]');
     const heroEls = document.querySelectorAll('[data-hero-anim]');
@@ -35,9 +34,6 @@ try {
 
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
-    if (navEls.length) {
-      tl.from(navEls, { opacity: 0, y: -20, duration: 0.6, stagger: 0.08, clearProps: 'opacity,transform' }, 0);
-    }
     if (bg) {
       tl.to(bg, { scale: 1, duration: 1.8, ease: 'power2.out' }, 0);
     }
