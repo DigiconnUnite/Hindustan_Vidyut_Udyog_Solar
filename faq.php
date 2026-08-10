@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
+consultation_handle();
 $pageTitle = 'FAQ — Hindustan Vidyut Udyog Solar';
 $bannerTitle = 'Frequently Asked Questions';
 $bannerSubtitle = 'Answers to the questions we hear most from homeowners.';
@@ -72,20 +73,6 @@ require __DIR__ . '/components/page-banner.php';
   </div>
 </section>
 
-<section class="bg-gray-50 py-16">
-  <div class="mx-auto container px-6 text-center">
-    <h2 class="text-2xl font-bold text-gray-900">Still have a question?</h2>
-    <p class="mt-3 text-gray-600">Our team is happy to walk you through anything not covered here.</p>
-    <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
-      <a href="/contact.php" class="inline-flex items-center gap-2 rounded-lg bg-accent-500 py-1.5 pl-4 pr-1.5 text-sm font-semibold text-white hover:bg-accent-600">
-        Contact Us
-        <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-accent-600"><?= icon('arrow-right', 'h-4 w-4') ?></span>
-      </a>
-      <a href="tel:<?= e(setting('company_phone', '+91 98765 43210')) ?>" class="inline-flex items-center gap-2 rounded-lg border border-primary-700 px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-50">
-        <?= icon('phone', 'h-4 w-4') ?> <?= e(setting('company_phone', '+91 98765 43210')) ?>
-      </a>
-    </div>
-  </div>
-</section>
+<?php require __DIR__ . '/components/consultation-cta.php'; ?>
 
 <?php require __DIR__ . '/components/footer.php'; ?>

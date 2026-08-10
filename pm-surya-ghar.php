@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
+consultation_handle();
 $pageTitle = 'PM Surya Ghar Muft Bijli Yojana — Hindustan Vidyut Udyog Solar';
 $bannerTitle = 'PM Surya Ghar Muft Bijli Yojana';
 $bannerSubtitle = 'Get up to ₹78,000 central government subsidy on your rooftop solar system — we handle the paperwork.';
@@ -103,15 +104,10 @@ require __DIR__ . '/components/page-banner.php';
   </p>
 </section>
 
-<section class="mx-3 my-4 rounded-3xl bg-ink py-16 text-center">
-  <h2 class="text-3xl font-bold text-white">Check Your Subsidy Eligibility</h2>
-  <p class="mt-3 text-gray-300 max-w-xl mx-auto">
-    Talk to our team — we'll check your eligibility and handle the government paperwork for you.
-  </p>
-  <a href="/contact.php?subject=pm-surya-ghar" class="btn-primary mt-6 bg-white text-gray-900 hover:bg-gray-100">
-    Get a Free Quote <span class="btn-icon bg-accent-500 text-ink"><?= icon('arrow-right', 'h-4 w-4') ?></span>
-  </a>
-  <p class="mt-6 text-xs text-gray-400 max-w-xl mx-auto">
+<?php require __DIR__ . '/components/consultation-cta.php'; ?>
+
+<section class="mx-auto container px-6 pb-16">
+  <p class="text-xs text-gray-500 max-w-xl mx-auto text-center">
     Subsidy amounts and eligibility are set by the government under the PM Surya Ghar Muft
     Bijli Yojana and may change. HVU Solar assists with the application; final approval is
     granted by your DISCOM and the official government portal.

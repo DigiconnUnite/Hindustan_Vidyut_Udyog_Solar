@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
+consultation_handle();
 
 $posts = require __DIR__ . '/data/blog-posts.php';
 $slug = $_GET['slug'] ?? '';
@@ -125,7 +126,7 @@ require __DIR__ . '/components/header.php';
     </div>
     <div class="grid gap-8 md:grid-cols-3">
       <?php foreach ($related as $rel): ?>
-        <a href="/blog-details.php?slug=<?= urlencode($rel['slug']) ?>" class="card group overflow-hidden p-3 flex flex-col border border-gray-900 shadow-none bg-white hover:bg-primary-100 transition-colors">
+        <a href="/blog-details.php?slug=<?= urlencode($rel['slug']) ?>" class="card shimmer group overflow-hidden p-3 flex flex-col border border-gray-900 shadow-none bg-white hover:bg-primary-100 transition-colors">
           <div class="relative aspect-video rounded-2xl bg-gray-100 overflow-hidden">
             <img src="<?= e($rel['image']) ?>" class="h-full w-full object-cover" alt="<?= e($rel['title']) ?>">
             <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 text-xs font-semibold text-primary-700 shadow-sm">
@@ -150,5 +151,7 @@ require __DIR__ . '/components/header.php';
   </div>
 </section>
 <?php endif; ?>
+
+<?php require __DIR__ . '/components/consultation-cta.php'; ?>
 
 <?php require __DIR__ . '/components/footer.php'; ?>

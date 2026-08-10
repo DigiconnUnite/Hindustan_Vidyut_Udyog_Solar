@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
+consultation_handle();
 $pageTitle = 'About Us — Hindustan Vidyut Udyog Solar';
 $bannerTitle = 'About Us';
 $bannerSubtitle = 'A decade of powering homes with clean, reliable solar energy.';
@@ -39,9 +40,6 @@ require __DIR__ . '/components/page-banner.php';
   </div>
 </section>
 
-<section class="mx-auto container px-6 py-16 text-center">
-  <h2 class="text-3xl font-bold text-gray-900">Ready to go solar?</h2>
-  <a href="/contact.php" class="btn-primary mt-6">Get a Free Quote <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span></a>
-</section>
+<?php require __DIR__ . '/components/consultation-cta.php'; ?>
 
 <?php require __DIR__ . '/components/footer.php'; ?>

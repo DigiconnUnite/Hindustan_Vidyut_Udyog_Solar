@@ -18,4 +18,22 @@ return [
         'role' => 'Homeowner, Varanasi',
         'photo' => '',
     ],
+    [
+        'quote' => 'We run a small textile unit and the diesel backup was eating our margins. The 25 kW rooftop system has cut our running cost by more than half, and the payback is tracking close to what they projected.',
+        'name' => 'Anil Gupta',
+        'role' => 'Business Owner, Kanpur',
+        'photo' => '',
+    ],
+    [
+        'quote' => 'What stood out was the after-sales. A string tripped during the monsoon and an engineer was on the roof the next morning. No arguments, no service charge, sorted the same day.',
+        'name' => 'Meena Sharma',
+        'role' => 'Homeowner, Prayagraj',
+        'photo' => '',
+    ],
+    [
+        'quote' => 'They walked our society committee through the whole proposal, panel brands, warranties and net metering, before we signed anything. Two years on, the common area bill is practically nil.',
+        'name' => 'Devendra Yadav',
+        'role' => 'Society Secretary, Lucknow',
+        'photo' => '',
+    ],
 ];

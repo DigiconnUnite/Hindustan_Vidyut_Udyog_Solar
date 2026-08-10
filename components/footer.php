@@ -4,10 +4,30 @@ $footerLinks = [
     '/index.php' => 'Home',
     '/about.php' => 'About Us',
     '/services.php' => 'Services',
-    '/pm-surya-ghar.php' => 'PM Surya Ghar',
     '/products.php' => 'Products',
     '/blog.php' => 'Blog',
     '/contact.php' => 'Support',
+];
+// PM Surya Ghar subsidises grid-connected (on-grid) rooftop solar only — off-grid and
+// hybrid are sold by us but are NOT scheme-eligible, so the subsidy note is on-grid only.
+$footerSolarTypes = [
+    ['/products.php?category=panel', 'On-Grid Rooftop Solar', true],
+    ['/products.php?category=battery', 'Off-Grid Solar with Storage', false],
+    ['/products.php?category=inverter', 'Hybrid Solar Systems', false],
+];
+// Payment marks. Drop the official SVG from each brand's media kit into
+// assets/images/payments/<file> and it renders automatically; until then the
+// label shows as a text badge, so nothing looks broken while assets are pending.
+// Third value is an optical-size class: these SVGs have different canvases
+// (UPI 432x216, Visa/RuPay/NetBanking square) so a single height renders the
+// square ones small — their mark is padded inside an empty square. Sized per
+// logo so the marks look equal, not so the boxes are equal.
+$footerPayments = [
+    ['upi.svg', 'UPI', 'h-10'],
+    ['visa.svg', 'Visa', 'h-12'],
+    ['mastercard.svg', 'Mastercard', 'h-10'],
+    ['rupay.svg', 'RuPay', 'h-12'],
+    ['netbanking.svg', 'Net Banking', 'h-12'],
 ];
 $footerSocials = [
     'facebook' => setting('social_facebook', '#'),
@@ -26,6 +46,18 @@ $footerSocials = [
       </span>
     </a>
 
+    <?php $activeSocials = array_filter($footerSocials, fn($u) => $u !== '' && $u !== '#'); ?>
+    <?php if ($activeSocials): ?>
+      <div class="flex items-center gap-4 self-start md:self-auto">
+        <?php foreach ($activeSocials as $name => $url): ?>
+          <a href="<?= e($url) ?>" target="_blank" rel="noopener" aria-label="<?= e(ucfirst($name)) ?>"
+             class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white text-white transition-colors hover:bg-white hover:text-ink">
+            <?= icon($name, 'h-4 w-4') ?>
+          </a>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+
     <a href="/contact.php" class="inline-flex items-center gap-2 self-start rounded-lg bg-accent-500 py-1.5 pl-4 pr-1.5 text-sm font-semibold text-white hover:bg-accent-600">
       Get a Quote
       <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-accent-600"><?= icon('arrow-right', 'h-4 w-4') ?></span>
@@ -33,21 +65,13 @@ $footerSocials = [
   </div>
 
   <!-- Row 2: columns -->
-  <div class="grid gap-10 md:grid-cols-4 px-6 py-10">
+  <div class="grid gap-10 sm:grid-cols-2 md:grid-cols-4 px-6 py-10">
     <div>
       <p class="font-semibold text-white leading-snug">
         We don't wait for the future.<br>
         At Hindustan Vidyut Udyog, we build it with<br>
         clean, intelligent energy.
       </p>
-      <div class="flex items-center gap-2 mt-6">
-        <?php foreach ($footerSocials as $name => $url): ?>
-          <a href="<?= e($url) ?>" aria-label="<?= e($name) ?>"
-             class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-accent-500 text-white hover:bg-accent-600">
-            <?= icon($name, 'h-4 w-4') ?>
-          </a>
-        <?php endforeach; ?>
-      </div>
     </div>
 
     <div>
@@ -57,6 +81,27 @@ $footerSocials = [
           <li><a href="<?= e($href) ?>" class="text-gray-300 hover:text-white"><?= e($label) ?></a></li>
         <?php endforeach; ?>
       </ul>
+    </div>
+
+    <div>
+      <h4 class="font-semibold text-accent-400 mb-4">Solar Systems</h4>
+      <ul class="space-y-3 text-sm">
+        <?php foreach ($footerSolarTypes as [$href, $label, $subsidised]): ?>
+          <li>
+            <a href="<?= e($href) ?>" class="text-gray-300 hover:text-white"><?= e($label) ?></a>
+            <?php if ($subsidised): ?>
+              <span class="ml-1.5 align-middle rounded bg-accent-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-accent-400">Subsidy</span>
+            <?php endif; ?>
+          </li>
+        <?php endforeach; ?>
+        <li class="pt-1">
+          <a href="/pm-surya-ghar.php" class="inline-flex items-center gap-1.5 font-medium text-accent-400 hover:text-accent-500">
+            PM Surya Ghar Subsidy
+            <?= icon('arrow-right', 'h-3.5 w-3.5') ?>
+          </a>
+        </li>
+      </ul>
+      <p class="mt-3 text-xs text-gray-500 leading-relaxed">Subsidy applies to grid-connected rooftop systems only.</p>
     </div>
 
     <div>
@@ -75,36 +120,43 @@ $footerSocials = [
           <a href="tel:<?= e(setting('company_phone', '+91 98765 43210')) ?>" class="text-white font-medium hover:text-accent-400"><?= e(setting('company_phone', '+91 98765 43210')) ?></a>
         </li>
       </ul>
-    </div>
-
-    <div class="rounded-2xl bg-white p-5 shadow-sm">
-      <h4 class="font-bold text-gray-900 mb-4">Send Us a Message</h4>
-      <form method="post" action="/index.php#consultation" class="space-y-3">
-        <?= csrf_field() ?>
-        <input type="text" name="name" required placeholder="Your name" class="input">
-        <input type="email" name="email" required placeholder="Your email" class="input">
-        <textarea name="message" required rows="3" placeholder="How can we help?" class="input"></textarea>
-        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-accent-500 py-1.5 pl-4 pr-1.5 text-sm font-semibold text-white hover:bg-accent-600">
-          Send Message
-          <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-accent-600"><?= icon('send', 'h-4 w-4') ?></span>
-        </button>
-      </form>
+      <a href="/contact.php" class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-accent-400 hover:text-accent-500">
+        Send us a message
+        <?= icon('arrow-right', 'h-4 w-4') ?>
+      </a>
     </div>
   </div>
 
-  <!-- Row 3: legal bar -->
-  <div class="border-t border-white/10 px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-white/80">
+  <!-- Row 3: payment methods -->
+  <div class="border-t border-white/10 px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+    <h4 class="shrink-0 text-xs font-semibold uppercase tracking-wide text-gray-400">We Accept</h4>
+    <ul class="flex flex-wrap items-center gap-x-6 gap-y-3">
+      <?php foreach ($footerPayments as [$file, $label, $size]): ?>
+        <?php $svg = '/assets/images/payments/' . $file; ?>
+        <li class="flex h-12 items-center">
+          <?php if (is_file(__DIR__ . '/..' . $svg)): ?>
+            <img src="<?= e($svg) ?>" alt="<?= e($label) ?>" loading="lazy"
+                 class="<?= e($size) ?> w-auto max-w-[96px] object-contain">
+          <?php else: ?>
+            <span class="inline-flex h-8 items-center rounded-md border border-white/25 px-3 text-xs font-semibold text-gray-300"><?= e($label) ?></span>
+          <?php endif; ?>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+  </div>
+
+  <!-- Row 4: legal bar -->
+  <div class="border-t border-white/10 px-6 py-5 flex flex-col md:flex-row md:items-center gap-4 text-sm text-white/80">
     <p class="md:flex-1">&copy; <?= date('Y') ?> Hindustan Vidyut Udyog Solar. All Rights Reserved.</p>
-    <p class="md:shrink-0">Designed &amp; Developed by <a href="https://digiconnunite.com" target="_blank" rel="noopener" class="font-medium hover:text-accent-400">Digiconn Unite</a></p>
-    <div class="flex items-center justify-end gap-4 md:flex-1">
+    <p class="md:text-center">Designed &amp; Developed by
+      <a href="https://digiconnunite.com" target="_blank" rel="noopener" class="font-medium hover:text-accent-400">Digiconn Unite</a>
+    </p>
+    <nav aria-label="Legal" class="md:flex-1 flex flex-wrap items-center gap-x-4 gap-y-2 md:justify-end">
       <a href="/terms.php" class="hover:text-white">Terms &amp; Conditions</a>
-      <span>|</span>
       <a href="/privacy.php" class="hover:text-white">Privacy Policy</a>
-      <span>|</span>
       <a href="/faq.php" class="hover:text-white">FAQ</a>
-      <span>|</span>
       <a href="/admin/login.php" class="hover:text-white">Staff Login</a>
-    </div>
+    </nav>
   </div>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>

@@ -41,7 +41,7 @@ require __DIR__ . '/components/page-banner.php';
 ?>
 
 <section class="mx-auto container px-6 py-16">
-  <div class="grid gap-8 lg:grid-cols-[1fr_400px] items-start">
+  <div class="grid gap-8 overflow-hidden lg:grid-cols-[1fr_400px] items-start">
 
       <div class="rounded-3xl bg-gray-50 p-6 md:p-10">
         <h2 class="text-2xl font-bold text-gray-900">Send Us a Message</h2>
@@ -98,7 +98,7 @@ require __DIR__ . '/components/page-banner.php';
         </form>
       </div>
 
-      <aside class="rounded-3xl bg-ink p-8 flex flex-col">
+      <aside class="rounded-3xl h-full relative overflow-hidden bg-ink p-8 flex flex-col">
         <span class="inline-flex items-center self-start rounded-full border border-accent-400 px-4 py-1.5 text-sm font-medium text-accent-400">
           Get in Touch
         </span>
@@ -126,7 +126,7 @@ require __DIR__ . '/components/page-banner.php';
           </li>
         </ul>
 
-        <img src="/assets/images/solar-svg-1.webp" alt="" class="mt-auto pt-8 w-full max-w-[280px] self-center">
+        <img src="/assets/images/solar-svg-1.webp" alt="" class="mt-auto absolute bottom-0 right-0 pt-8 w-full max-w-[280px] self-center">
       </aside>
 
   </div>

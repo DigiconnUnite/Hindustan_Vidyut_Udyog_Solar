@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
+consultation_handle();
 $pageTitle = 'Services — Hindustan Vidyut Udyog Solar';
 
 $services = db()->query('SELECT * FROM services ORDER BY sort_order')->fetchAll();
@@ -22,9 +23,6 @@ require __DIR__ . '/components/page-banner.php';
   <?php endforeach; ?>
 </section>
 
-<section class="bg-gray-50 py-16 text-center">
-  <h2 class="text-3xl font-bold text-gray-900">Ready to get started?</h2>
-  <a href="/contact.php" class="btn-primary mt-6">Get a Free Quote <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span></a>
-</section>
+<?php require __DIR__ . '/components/consultation-cta.php'; ?>
 
 <?php require __DIR__ . '/components/footer.php'; ?>

@@ -115,3 +115,12 @@ INSERT INTO site_settings (`key`, `value`) VALUES
   ('stat_years_experience', '10+'),
   ('stat_customer_rating', '4.8/5')
 ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
+
+-- Social profile URLs. The footer hides any icon whose URL is empty or '#',
+-- so replace these with the real profiles to make the icons appear.
+-- `key = key` keeps values already set from being reset on a schema re-run.
+INSERT INTO site_settings (`key`, `value`) VALUES
+  ('social_facebook', 'https://www.facebook.com/'),
+  ('social_twitter', 'https://x.com/'),
+  ('social_youtube', 'https://www.youtube.com/')
+ON DUPLICATE KEY UPDATE `key` = `key`;

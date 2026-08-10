@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
+consultation_handle();
 $pageTitle = 'Products — Hindustan Vidyut Udyog Solar';
 
 $products = db()->query('SELECT * FROM products WHERE is_active = 1 ORDER BY sort_order')->fetchAll();
@@ -48,19 +49,29 @@ require __DIR__ . '/components/page-banner.php';
 </section>
 
 <script>
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const category = btn.dataset.category;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('bg-accent-500', 'text-ink'));
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.add('text-gray-600'));
-    btn.classList.add('bg-accent-500', 'text-ink');
-    btn.classList.remove('text-gray-600');
-
-    document.querySelectorAll('.product-card').forEach(card => {
-      card.style.display = (category === 'all' || card.dataset.category === category) ? '' : 'none';
-    });
+function applyCategory(category) {
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    const on = b.dataset.category === category;
+    b.classList.toggle('bg-accent-500', on);
+    b.classList.toggle('text-ink', on);
+    b.classList.toggle('text-gray-600', !on);
   });
+  document.querySelectorAll('.product-card').forEach(card => {
+    card.style.display = (category === 'all' || card.dataset.category === category) ? '' : 'none';
+  });
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyCategory(btn.dataset.category));
 });
+
+// Deep link: /products.php?category=panel — falls back to "all" for unknown values.
+const wanted = new URLSearchParams(location.search).get('category');
+if (wanted && document.querySelector('.filter-btn[data-category="' + CSS.escape(wanted) + '"]')) {
+  applyCategory(wanted);
+}
 </script>
+
+<?php require __DIR__ . '/components/consultation-cta.php'; ?>
 
 <?php require __DIR__ . '/components/footer.php'; ?>
