@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
 consultation_handle();
-$pageTitle = 'About Us — Hindustan Vidyut Udyog Solar';
+$pageTitle = 'About Us — 10+ Years of Solar Installation | HVU Solar';
+$metaDescription = 'Hindustan Vidyut Udyog Solar has installed 1200+ rooftop systems across Delhi NCR. MNRE-registered, ALMM-compliant, and backed by a 5-year workmanship warranty.';
 $bannerTitle = 'About Us';
 $bannerSubtitle = 'A decade of powering homes with clean, reliable solar energy.';
 require __DIR__ . '/components/header.php';

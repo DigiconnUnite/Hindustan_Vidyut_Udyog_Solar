@@ -1,10 +1,42 @@
+<?php
+require_once __DIR__ . '/../config/seo.php';
+
+$pageTitle ??= 'Hindustan Vidyut Udyog Solar — Rooftop Solar Installation in Gurgaon';
+$metaDescription ??= 'Rooftop solar installation with PM Surya Ghar subsidy assistance in Gurgaon & Delhi NCR. Free site survey, panels, inverters, batteries, AMC. Get a free quote.';
+$ogImage ??= '/assets/images/hero-image-1.png';
+$canonical = seo_canonical();
+// Pages may set $jsonLd to an array of extra schema.org graphs (Product, FAQPage, ...).
+$jsonLd = array_merge([seo_organization_schema()], $jsonLd ?? []);
+?>
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?= e($pageTitle ?? 'Hindustan Vidyut Udyog Solar') ?></title>
-  <meta name="description" content="Residential solar panel installation — site survey, installation, maintenance and AMC by Hindustan Vidyut Udyog Solar.">
+  <title><?= e($pageTitle) ?></title>
+  <meta name="description" content="<?= e($metaDescription) ?>">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="<?= e($canonical) ?>">
+  <meta name="theme-color" content="#1d5c32">
+  <link rel="icon" href="/assets/images/hvul-logo.png" type="image/png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Hindustan Vidyut Udyog Solar">
+  <meta property="og:title" content="<?= e($pageTitle) ?>">
+  <meta property="og:description" content="<?= e($metaDescription) ?>">
+  <meta property="og:url" content="<?= e($canonical) ?>">
+  <meta property="og:image" content="<?= e(str_starts_with($ogImage, 'http') ? $ogImage : APP_URL . $ogImage) ?>">
+  <meta property="og:locale" content="en_IN">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<?= e($pageTitle) ?>">
+  <meta name="twitter:description" content="<?= e($metaDescription) ?>">
+  <meta name="twitter:image" content="<?= e(str_starts_with($ogImage, 'http') ? $ogImage : APP_URL . $ogImage) ?>">
+
+  <?php foreach ($jsonLd as $schema): ?>
+    <?= seo_json_ld($schema) ?>
+  <?php endforeach; ?>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">

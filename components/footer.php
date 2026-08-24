@@ -5,8 +5,18 @@ $footerLinks = [
     '/about.php' => 'About Us',
     '/services.php' => 'Services',
     '/products.php' => 'Products',
+    '/solar-kits.php' => 'Solar Kits',
     '/blog.php' => 'Blog',
     '/contact.php' => 'Support',
+];
+// Tools and proof — the pages that answer "should I?" rather than "what do you sell?"
+$footerResources = [
+    '/solar-calculator.php' => 'Solar Calculator',
+    '/financing.php' => 'Financing & EMI',
+    '/projects.php' => 'Our Projects',
+    '/certifications.php' => 'Certifications',
+    '/service-areas.php' => 'Service Areas',
+    '/careers.php' => 'Careers',
 ];
 // PM Surya Ghar subsidises grid-connected (on-grid) rooftop solar only — off-grid and
 // hybrid are sold by us but are NOT scheme-eligible, so the subsidy note is on-grid only.
@@ -58,6 +68,25 @@ $footerSocials = [
       </div>
     <?php endif; ?>
 
+    <div id="subscribe" class="w-full md:w-auto md:max-w-sm scroll-mt-40">
+      <label for="footer-email" class="block text-sm font-medium text-white">Solar subsidy &amp; tariff updates</label>
+      <form method="post" action="/subscribe.php" class="mt-2 flex gap-2">
+        <?= csrf_field() ?>
+        <input type="hidden" name="back" value="<?= e(strtok($_SERVER['REQUEST_URI'], '?')) ?>">
+        <input type="email" id="footer-email" name="email" required placeholder="you@example.com"
+               class="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-gray-400 focus:border-accent-400 focus:outline-none focus:ring-1 focus:ring-accent-400">
+        <button type="submit" aria-label="Subscribe"
+                class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-500 text-ink hover:bg-accent-400">
+          <?= icon('send', 'h-4 w-4') ?>
+        </button>
+      </form>
+      <?php if ($subFlash = flash('subscribe_success')): ?>
+        <p class="mt-2 text-xs text-primary-100"><?= e($subFlash) ?></p>
+      <?php elseif ($subError = flash('subscribe_error')): ?>
+        <p class="mt-2 text-xs text-accent-400"><?= e($subError) ?></p>
+      <?php endif; ?>
+    </div>
+
     <a href="/contact.php" class="inline-flex items-center gap-2 self-start rounded-lg bg-accent-500 py-1.5 pl-4 pr-1.5 text-sm font-semibold text-white hover:bg-accent-600">
       Get a Quote
       <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-accent-600"><?= icon('arrow-right', 'h-4 w-4') ?></span>
@@ -65,7 +94,7 @@ $footerSocials = [
   </div>
 
   <!-- Row 2: columns -->
-  <div class="grid gap-10 sm:grid-cols-2 md:grid-cols-4 px-6 py-10">
+  <div class="grid gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 px-6 py-10">
     <div>
       <p class="font-semibold text-white leading-snug">
         We don't wait for the future.<br>
@@ -105,11 +134,20 @@ $footerSocials = [
     </div>
 
     <div>
+      <h4 class="font-semibold text-accent-400 mb-4">Resources</h4>
+      <ul class="space-y-3 text-sm">
+        <?php foreach ($footerResources as $href => $label): ?>
+          <li><a href="<?= e($href) ?>" class="text-gray-300 hover:text-white"><?= e($label) ?></a></li>
+        <?php endforeach; ?>
+      </ul>
+    </div>
+
+    <div>
       <h4 class="font-semibold text-accent-400 mb-4">Contact Information</h4>
       <ul class="space-y-3 text-sm">
         <li class="flex items-start gap-3">
           <span class="mt-0.5 text-accent-400"><?= icon('map-pin', 'h-4 w-4') ?></span>
-          <span class="text-white font-medium"><?= e(setting('company_address', 'India')) ?></span>
+          <span class="text-white text-wrap font-medium">Hindustan Vidyut Udyog, <br> 810 & 811, 8th floor, <br> SVH 83 Metro Street, <br> Sector 83 , Gurgaon</span>
         </li>
         <li class="flex items-center gap-3">
           <span class="text-accent-400"><?= icon('mail', 'h-4 w-4') ?></span>
@@ -159,7 +197,24 @@ $footerSocials = [
     </nav>
   </div>
 </footer>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="/assets/js/app.js"></script>
+
+<?php $waDigits = preg_replace('/\D/', '', setting('company_whatsapp', setting('company_phone', '+91 98765 43210'))); ?>
+<a href="https://wa.me/<?= e($waDigits) ?>" target="_blank" rel="noopener"
+   aria-label="Chat with us on WhatsApp"
+   class="fixed bottom-6 right-6 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg hover:bg-[#1ebe5b]">
+  <span class="wa-pulse" aria-hidden="true"></span>
+  <?= icon('whatsapp', 'h-7 w-7 relative') ?>
+</a>
+<style>
+  .wa-pulse{position:absolute;inset:0;border-radius:9999px;background:#25D366;opacity:.7;
+    animation:wa-pulse 1.8s cubic-bezier(0,0,.2,1) infinite}
+  @keyframes wa-pulse{75%,100%{transform:scale(1.8);opacity:0}}
+  @media (prefers-reduced-motion:reduce){.wa-pulse{animation:none}}
+</style>
+
+<!-- defer so neither script blocks first paint; app.js waits on GSAP being
+     parsed first, which defer preserves (document order, before DOMContentLoaded). -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script defer src="/assets/js/app.js"></script>
 </body>
 </html>

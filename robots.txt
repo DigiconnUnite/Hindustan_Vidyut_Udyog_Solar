@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /config/
+Disallow: /database/
+Disallow: /tests/
+Disallow: /storage/
+
+Sitemap: https://hvusolar.com/sitemap.xml

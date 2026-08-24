@@ -9,6 +9,7 @@ if (ribbon) {
   const syncSpacer = () => {
     // header height changes with the ribbon; keep the spacer matched to it
     if (spacer) spacer.style.height = header.offsetHeight + 'px';
+    document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
   };
   const onScroll = () => {
     const hide = window.scrollY > 40;

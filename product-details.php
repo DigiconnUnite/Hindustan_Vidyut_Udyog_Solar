@@ -1,0 +1,444 @@
+<?php
+require_once __DIR__ . '/config/helpers.php';
+require_once __DIR__ . '/config/product-content.php';
+require_once __DIR__ . '/config/solar-calc.php';
+
+$id = (int) ($_GET['id'] ?? 0);
+$stmt = db()->prepare('SELECT * FROM products WHERE id = ? AND is_active = 1');
+$stmt->execute([$id]);
+$product = $stmt->fetch();
+
+if (!$product) {
+    redirect('/products.php');
+}
+
+// Own POST handler — deliberately not consultation_handle(), which would also
+// fire on this request and insert a second, emptier lead.
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify();
+
+    $back = '/product-details.php?id=' . $product['id'] . '#enquiry';
+    $name = trim($_POST['name'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $pincode = trim($_POST['pincode'] ?? '');
+    $message = trim($_POST['message'] ?? '');
+
+    if ($name === '' || $phone === '') {
+        flash('error', 'Name and phone are required.');
+        redirect($back);
+    }
+
+    // leads has no product column; keep it in the message so admin sees it.
+    $message = 'Product: ' . $product['name'] . ($message !== '' ? "\n\n" . $message : '');
+    // no pincode column either — address is the closest fit
+    $address = $pincode !== '' ? 'PIN ' . $pincode : null;
+
+    db()->prepare('INSERT INTO leads (name, phone, email, address, message) VALUES (?, ?, ?, ?, ?)')
+        ->execute([$name, $phone, $email ?: null, $address, $message]);
+
+    flash('success', 'Thanks! We received your enquiry and will call you shortly.');
+    redirect($back);
+}
+
+$specs = product_specs($product['specs']);
+$copy = product_copy($product['category']);
+
+$relStmt = db()->prepare('SELECT * FROM products WHERE category = ? AND id != ? AND is_active = 1 ORDER BY sort_order LIMIT 3');
+$relStmt->execute([$product['category'], $product['id']]);
+$related = $relStmt->fetchAll();
+
+// Only three products are seeded, so a category usually has no siblings.
+// Fall back to any other product rather than rendering an empty section.
+if (!$related) {
+    $relStmt = db()->prepare('SELECT * FROM products WHERE id != ? AND is_active = 1 ORDER BY sort_order LIMIT 3');
+    $relStmt->execute([$product['id']]);
+    $related = $relStmt->fetchAll();
+}
+
+$phoneNumber = setting('company_phone', '+91 98765 43210');
+$waDigits = preg_replace('/\D/', '', setting('company_whatsapp', $phoneNumber));
+$waLink = 'https://wa.me/' . $waDigits . '?text=' . rawurlencode('Hi, I am interested in the ' . $product['name'] . '. Please share a quote.');
+
+$productImage = $product['image_path']
+    ? '/' . e($product['image_path'])
+    : 'https://placehold.co/800x600?text=' . urlencode($product['name']);
+
+$revStmt = db()->prepare('SELECT * FROM product_reviews WHERE product_id = ? AND is_approved = 1 ORDER BY created_at DESC');
+$revStmt->execute([$product['id']]);
+$reviews = $revStmt->fetchAll();
+
+$discount = ($product['mrp'] && $product['price'] && $product['mrp'] > $product['price'])
+    ? (int) round(100 - ($product['price'] / $product['mrp'] * 100))
+    : 0;
+
+$pageTitle = $product['name'] . ' — Price, Specs & Warranty | HVU Solar';
+$metaDescription = mb_substr(trim((string) $product['description']), 0, 155)
+    ?: 'Buy ' . $product['name'] . ' with installation across Delhi NCR.';
+$ogImage = $product['image_path'] ? '/' . $product['image_path'] : '/assets/images/hero-image-1.png';
+
+// Product rich result — array_filter drops the keys we have no data for, since
+// an empty offers/rating block is worse than none at all.
+$jsonLd = [array_filter([
+    '@context' => 'https://schema.org',
+    '@type' => 'Product',
+    'name' => $product['name'],
+    'description' => $product['description'],
+    'category' => ucfirst($product['category']),
+    'brand' => $product['brand'] ? ['@type' => 'Brand', 'name' => $product['brand']] : null,
+    'offers' => $product['price'] ? [
+        '@type' => 'Offer',
+        'price' => (string) (int) $product['price'],
+        'priceCurrency' => 'INR',
+        'availability' => $product['in_stock'] ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        'url' => APP_URL . '/product-details.php?id=' . $product['id'],
+        'seller' => ['@type' => 'Organization', 'name' => 'Hindustan Vidyut Udyog Solar'],
+    ] : null,
+    'aggregateRating' => ($product['rating'] && $product['review_count']) ? [
+        '@type' => 'AggregateRating',
+        'ratingValue' => (string) $product['rating'],
+        'reviewCount' => (string) $product['review_count'],
+    ] : null,
+    'review' => $reviews ? array_map(fn($r) => [
+        '@type' => 'Review',
+        'author' => ['@type' => 'Person', 'name' => $r['author']],
+        'reviewRating' => ['@type' => 'Rating', 'ratingValue' => (string) $r['rating'], 'bestRating' => '5'],
+        'reviewBody' => $r['body'],
+        'datePublished' => date('Y-m-d', strtotime($r['created_at'])),
+    ], $reviews) : null,
+]), seo_breadcrumb_schema($product['name'])];
+
+$bannerTitle = $product['name'];
+$bannerSubtitle = $product['description'];
+
+require_once __DIR__ . '/components/icon.php';
+require __DIR__ . '/components/header.php';
+require __DIR__ . '/components/page-banner.php';
+?>
+
+<section class="mx-auto container px-6 py-12 md:py-16">
+  <div class="grid gap-10 lg:grid-cols-[1fr_420px] items-start">
+
+    <!-- LEFT: product story -->
+    <div>
+      <div class="relative aspect-[4/3] rounded-2xl bg-gray-100 overflow-hidden border border-gray-900">
+        <img src="<?= $productImage ?>" class="h-full w-full object-cover" alt="<?= e($product['name']) ?>">
+        <span class="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 text-xs font-semibold text-primary-700 shadow-sm">
+          <?= icon('package', 'h-3.5 w-3.5') ?>
+          <?= e(ucfirst($product['category'])) ?>
+        </span>
+      </div>
+
+      <h1 class="mt-8 text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight"><?= e($product['name']) ?></h1>
+
+      <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+        <?php foreach ($copy['trust'] as $point): ?>
+          <span class="inline-flex items-center gap-1.5 text-gray-700">
+            <span class="text-primary-600"><?= icon('shield', 'h-4 w-4') ?></span>
+            <?= e($point) ?>
+          </span>
+        <?php endforeach; ?>
+      </div>
+
+      <?php if ($product['brand'] || $product['rating']): ?>
+        <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+          <?php if ($product['brand']): ?>
+            <span class="badge bg-primary-50 font-semibold text-primary-700"><?= e($product['brand']) ?></span>
+          <?php endif; ?>
+          <?php if ($product['rating']): ?>
+            <span class="inline-flex items-center gap-1.5">
+              <span class="text-accent-500" aria-hidden="true"><?= str_repeat('★', (int) round($product['rating'])) ?></span>
+              <span class="font-semibold text-gray-900"><?= e((string) $product['rating']) ?></span>
+              <a href="#reviews" class="text-gray-500 hover:text-primary-700"><?= (int) $product['review_count'] ?> reviews</a>
+            </span>
+          <?php endif; ?>
+        </div>
+      <?php endif; ?>
+
+      <?php if ($product['price']): ?>
+        <div class="mt-6 flex flex-wrap items-end gap-4">
+          <p class="flex items-baseline gap-3">
+            <span class="text-4xl font-extrabold text-gray-900"><?= e(inr((int) $product['price'])) ?></span>
+            <?php if ($discount > 0): ?>
+              <span class="text-lg text-gray-400 line-through"><?= e(inr((int) $product['mrp'])) ?></span>
+              <span class="badge bg-accent-500 font-bold text-ink"><?= $discount ?>% off</span>
+            <?php endif; ?>
+          </p>
+          <?php if (!$product['in_stock']): ?>
+            <span class="badge bg-gray-100 text-gray-600">Out of stock</span>
+          <?php endif; ?>
+        </div>
+        <p class="mt-1.5 text-sm text-gray-500">
+          Inclusive of taxes · installation quoted separately after a
+          <a href="/contact.php" class="font-medium text-primary-700 hover:text-primary-600">free site survey</a>.
+        </p>
+      <?php endif; ?>
+
+      <p class="mt-5 text-lg text-gray-600 leading-relaxed"><?= e($product['description']) ?></p>
+
+      <?php if ($product['datasheet_path'] && is_file(__DIR__ . '/' . $product['datasheet_path'])): ?>
+        <a href="/<?= e($product['datasheet_path']) ?>" target="_blank" rel="noopener"
+           class="btn-outline mt-6 text-sm py-1">
+          Download datasheet (PDF) <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
+        </a>
+      <?php endif; ?>
+
+      <!-- Specifications -->
+      <?php if ($specs): ?>
+        <div class="mt-12">
+          <h2 class="text-2xl font-bold text-gray-900">Specifications</h2>
+          <dl class="mt-5 overflow-hidden rounded-2xl border border-gray-900">
+            <?php foreach ($specs as $i => [$label, $value]): ?>
+              <div class="flex flex-wrap items-center justify-between gap-2 px-5 py-3.5 <?= $i % 2 ? 'bg-white' : 'bg-primary-50' ?>">
+                <dt class="text-sm font-medium text-gray-600"><?= e($label) ?></dt>
+                <dd class="text-sm font-semibold text-gray-900"><?= e($value) ?></dd>
+              </div>
+            <?php endforeach; ?>
+          </dl>
+        </div>
+      <?php endif; ?>
+
+      <!-- Why choose this -->
+      <div class="mt-12">
+        <h2 class="text-2xl font-bold text-gray-900"><?= e($copy['benefits_title']) ?></h2>
+        <div class="mt-6 grid gap-5 sm:grid-cols-2">
+          <?php foreach ($copy['benefits'] as [$ico, $title, $text]): ?>
+            <div class="card border border-gray-900 shadow-none ring-0 hover:bg-primary-50 transition-colors">
+              <span class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-accent-400 text-ink">
+                <?= icon($ico, 'h-5 w-5') ?>
+              </span>
+              <h3 class="mt-4 font-bold text-gray-900"><?= e($title) ?></h3>
+              <p class="mt-2 text-sm text-gray-600 leading-relaxed"><?= e($text) ?></p>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+
+      <!-- Process -->
+      <div class="mt-12">
+        <h2 class="text-2xl font-bold text-gray-900">How It Works</h2>
+        <ol class="mt-6 space-y-5">
+          <?php foreach ($copy['steps'] as $n => [$title, $text]): ?>
+            <li class="flex gap-4">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white"><?= $n + 1 ?></span>
+              <div class="pt-1">
+                <h3 class="font-bold text-gray-900"><?= e($title) ?></h3>
+                <p class="mt-1 text-sm text-gray-600 leading-relaxed"><?= e($text) ?></p>
+              </div>
+            </li>
+          <?php endforeach; ?>
+        </ol>
+      </div>
+
+      <!-- FAQ: native <details>, no JS -->
+      <div class="mt-12">
+        <h2 class="text-2xl font-bold text-gray-900">Frequently Asked Questions</h2>
+        <div class="mt-6 space-y-3">
+          <?php foreach ($copy['faqs'] as [$question, $answer]): ?>
+            <details class="group rounded-2xl border border-gray-900 bg-white px-5 py-4 open:bg-primary-50">
+              <summary class="flex cursor-pointer items-center justify-between gap-4 font-semibold text-gray-900 list-none">
+                <?= e($question) ?>
+                <span class="shrink-0 text-primary-600 transition-transform group-open:rotate-90"><?= icon('arrow-right', 'h-4 w-4') ?></span>
+              </summary>
+              <p class="mt-3 text-sm text-gray-600 leading-relaxed"><?= e($answer) ?></p>
+            </details>
+          <?php endforeach; ?>
+        </div>
+      </div>
+
+      <!-- Subsidy CTA band -->
+      <div class="mt-12 card bg-accent-400 border border-gray-900 ring-0 shadow-none flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h3 class="font-semibold text-gray-900">Eligible for up to 40% government subsidy</h3>
+          <p class="mt-1 text-sm text-gray-800">Check what you can claim under the PM Surya Ghar scheme.</p>
+        </div>
+        <a href="/pm-surya-ghar.php" class="inline-flex items-center gap-2 rounded-full bg-ink py-1.5 pl-5 pr-1.5 text-sm font-semibold text-white hover:bg-primary-700">
+          Check Eligibility
+          <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-ink"><?= icon('arrow-right', 'h-4 w-4') ?></span>
+        </a>
+      </div>
+
+      <div class="mt-10 border-t border-gray-200 pt-6">
+        <a href="/products.php" class="inline-flex items-center gap-2 rounded-full bg-accent-500 py-1.5 pl-1.5 pr-5 text-sm font-semibold text-white hover:bg-accent-600">
+          <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-accent-600"><?= icon('arrow-left', 'h-4 w-4') ?></span>
+          Back to Products
+        </a>
+      </div>
+    </div>
+
+    <!-- RIGHT: sticky lead panel -->
+    <aside id="enquiry" class="scroll-mt-44 lg:sticky lg:top-44">
+      <div class="rounded-3xl border border-gray-900 bg-ink p-6 md:p-7">
+        <span class="inline-flex items-center rounded-full border border-accent-400 px-4 py-1.5 text-xs font-medium text-accent-400">
+          Free Site Survey
+        </span>
+        <h2 class="mt-4 text-2xl font-extrabold text-white leading-tight">Get a Free Quote</h2>
+        <p class="mt-2 text-sm text-gray-300">
+          Share your details and our solar advisor will call you back — usually within one working day.
+        </p>
+
+        <div class="mt-5">
+          <?php require __DIR__ . '/components/flash-message.php'; ?>
+        </div>
+
+        <form method="post" action="/product-details.php?id=<?= (int) $product['id'] ?>#enquiry" class="mt-2 space-y-4">
+          <?= csrf_field() ?>
+
+          <div>
+            <label for="lead-name" class="text-sm font-medium text-accent-400">Your Name <span class="text-red-400">*</span></label>
+            <input id="lead-name" type="text" name="name" required autocomplete="name" placeholder="e.g. Jason Samuel" class="input mt-1 bg-white py-2.5">
+          </div>
+
+          <div>
+            <label for="lead-phone" class="text-sm font-medium text-accent-400">Phone <span class="text-red-400">*</span></label>
+            <input id="lead-phone" type="tel" name="phone" required autocomplete="tel" inputmode="tel" placeholder="e.g. +91 98765 43210" class="input mt-1 bg-white py-2.5">
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="lead-email" class="text-sm font-medium text-accent-400">Email</label>
+              <input id="lead-email" type="email" name="email" autocomplete="email" placeholder="you@example.com" class="input mt-1 bg-white py-2.5">
+            </div>
+            <div>
+              <label for="lead-pincode" class="text-sm font-medium text-accent-400">PIN Code</label>
+              <input id="lead-pincode" type="text" name="pincode" inputmode="numeric" maxlength="6" placeholder="e.g. 226001" class="input mt-1 bg-white py-2.5">
+            </div>
+          </div>
+
+          <div>
+            <label for="lead-message" class="text-sm font-medium text-accent-400">Message</label>
+            <textarea id="lead-message" name="message" rows="3" placeholder="Roof size, monthly bill, or anything else we should know" class="input mt-1 bg-white"></textarea>
+          </div>
+
+          <button type="submit" class="w-full inline-flex items-center justify-between gap-2 rounded-lg bg-accent-500 py-1.5 pl-5 pr-1.5 font-semibold text-white hover:bg-accent-600">
+            Send Enquiry
+            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white text-accent-600"><?= icon('send', 'h-4 w-4') ?></span>
+          </button>
+        </form>
+
+        <div class="my-5 flex items-center gap-3 text-xs text-gray-400">
+          <span class="h-px flex-1 bg-white/20"></span>
+          or reach us directly
+          <span class="h-px flex-1 bg-white/20"></span>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <a href="tel:<?= e($phoneNumber) ?>"
+             class="inline-flex items-center justify-center gap-2 rounded-lg border border-white/30 px-4 py-2.5 text-sm font-semibold text-white hover:border-accent-400 hover:text-accent-400 transition-colors">
+            <?= icon('phone', 'h-4 w-4') ?> Call Now
+          </a>
+          <a href="<?= e($waLink) ?>" target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1eb355] transition-colors">
+            <?= icon('whatsapp', 'h-4 w-4') ?> WhatsApp
+          </a>
+        </div>
+
+        <p class="mt-4 text-center text-xs text-gray-400">
+          No spam. Your details are used only to prepare your quote.
+        </p>
+      </div>
+    </aside>
+
+  </div>
+</section>
+
+<?php if ($reviews): ?>
+<section id="reviews" class="mx-auto container px-6 pb-16 scroll-mt-40">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <h2 class="text-2xl font-bold text-gray-900">Customer reviews</h2>
+    <?php if ($product['rating']): ?>
+      <p class="flex items-center gap-2 text-sm">
+        <span class="text-lg text-accent-500" aria-hidden="true"><?= str_repeat('★', (int) round($product['rating'])) ?></span>
+        <span class="font-bold text-gray-900"><?= e((string) $product['rating']) ?> out of 5</span>
+        <span class="text-gray-500">· <?= (int) $product['review_count'] ?> ratings</span>
+      </p>
+    <?php endif; ?>
+  </div>
+
+  <div class="mt-8 grid gap-6 md:grid-cols-2">
+    <?php foreach ($reviews as $r): ?>
+      <?php // Same dark quote card as the homepage testimonials, so reviews read
+            // as one component wherever they appear. ?>
+      <figure class="flex h-full flex-col rounded-3xl bg-ink px-8 py-7">
+        <span class="text-accent-500 text-lg" aria-label="<?= (int) $r['rating'] ?> out of 5">
+          <?= str_repeat('★', (int) $r['rating']) ?><span class="text-white/25"><?= str_repeat('★', 5 - (int) $r['rating']) ?></span>
+        </span>
+        <blockquote class="mt-4 flex-1 font-medium italic leading-relaxed text-white">
+          &ldquo;<?= e($r['body']) ?>&rdquo;
+        </blockquote>
+        <figcaption class="mt-6 flex items-center gap-4">
+          <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent-500 font-bold text-ink ring-2 ring-accent-400">
+            <?= e(mb_substr($r['author'], 0, 1)) ?>
+          </span>
+          <span>
+            <span class="block font-semibold text-white"><?= e($r['author']) ?></span>
+            <span class="block text-sm text-accent-400">
+              <?= e($r['location'] ?: 'Verified customer') ?> · <?= e(date('M Y', strtotime($r['created_at']))) ?>
+            </span>
+          </span>
+        </figcaption>
+      </figure>
+    <?php endforeach; ?>
+  </div>
+</section>
+<?php endif; ?>
+
+<?php if ($related): ?>
+<section class="bg-primary-50 py-16">
+  <div class="mx-auto container px-6">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-10">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">You May Also Like</h2>
+        <p class="mt-2 text-sm text-gray-600">Other products from our solar range.</p>
+      </div>
+      <a href="/products.php" class="btn-outline text-sm py-1">
+        View All Products <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
+      </a>
+    </div>
+    <div class="grid gap-8 md:grid-cols-3">
+      <?php foreach ($related as $rel): ?>
+        <a href="/product-details.php?id=<?= (int) $rel['id'] ?>" class="card shimmer group overflow-hidden p-3 flex flex-col border border-gray-900 shadow-none bg-white hover:bg-primary-100 transition-colors">
+          <div class="relative h-52 rounded-2xl bg-gray-100 overflow-hidden">
+            <img src="<?= $rel['image_path'] ? '/' . e($rel['image_path']) : 'https://placehold.co/400x160?text=' . urlencode($rel['name']) ?>" class="h-full w-full object-cover" alt="<?= e($rel['name']) ?>">
+            <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 text-xs font-semibold text-primary-700 shadow-sm">
+              <?= e(ucfirst($rel['category'])) ?>
+            </span>
+          </div>
+          <div class="p-4 pb-2 flex flex-col flex-1">
+            <h3 class="font-bold text-gray-900 text-lg leading-snug group-hover:text-primary-700 transition-colors"><?= e($rel['name']) ?></h3>
+            <p class="mt-2 text-sm text-gray-600 flex-1"><?= e($rel['description']) ?></p>
+            <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
+              <span class="text-xs font-medium text-gray-500"><?= e($rel['specs']) ?></span>
+              <span class="btn-outline text-sm py-1">
+                View
+                <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
+              </span>
+            </div>
+          </div>
+        </a>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
+
+<!-- Mobile action bar. Body gets matching bottom padding so it never covers the footer. -->
+<div class="lg:hidden fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+  <div class="flex items-center gap-2">
+    <a href="tel:<?= e($phoneNumber) ?>" aria-label="Call us"
+       class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-primary-600 text-primary-700">
+      <?= icon('phone', 'h-5 w-5') ?>
+    </a>
+    <a href="<?= e($waLink) ?>" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp"
+       class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#25D366] text-white">
+      <?= icon('whatsapp', 'h-5 w-5') ?>
+    </a>
+    <a href="#enquiry" class="flex-1 inline-flex items-center justify-between gap-2 rounded-lg bg-accent-500 py-1.5 pl-5 pr-1.5 font-semibold text-white hover:bg-accent-600">
+      Get a Free Quote
+      <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white text-accent-600"><?= icon('arrow-right', 'h-4 w-4') ?></span>
+    </a>
+  </div>
+</div>
+<div class="lg:hidden h-20" aria-hidden="true"></div>
+
+<?php require __DIR__ . '/components/footer.php'; ?>

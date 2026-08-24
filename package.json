@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "build": "tailwindcss -i assets/css/input.css -o assets/css/app.css --minify",
-    "watch": "tailwindcss -i assets/css/input.css -o assets/css/app.css --watch"
+    "watch": "tailwindcss -i assets/css/input.css -o assets/css/app.css --watch",
+    "test": "php tests/test-solar-calc.php && php tests/test-product-specs.php && php tests/test-csrf.php && node tests/test-calc-parity.js"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.0"

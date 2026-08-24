@@ -7,7 +7,10 @@ $navItems = [
     '/admin/team.php' => ['Team', 'users'],
     '/admin/leads.php' => ['Leads', 'inbox'],
     '/admin/products.php' => ['Products', 'package'],
+    '/admin/kits.php' => ['Solar Kits', 'sun'],
+    '/admin/projects.php' => ['Projects', 'clipboard'],
     '/admin/services.php' => ['Services', 'settings'],
+    '/admin/subscribers.php' => ['Subscribers', 'mail'],
 ];
 $currentScript = '/admin/' . basename($_SERVER['SCRIPT_NAME']);
 ?>

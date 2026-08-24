@@ -21,8 +21,13 @@ function csrf_field(): string
 
 function csrf_verify(): void
 {
+    $expected = $_SESSION['csrf'] ?? '';
     $token = $_POST['csrf'] ?? '';
-    if (!hash_equals($_SESSION['csrf'] ?? '', $token)) {
+
+    // A request with no session carries no expected token, and hash_equals('','')
+    // is true — so an empty pair must be rejected explicitly or a cookie-less
+    // POST sails straight through every form on the site.
+    if ($expected === '' || $token === '' || !hash_equals($expected, $token)) {
         http_response_code(419);
         exit('Invalid or expired form submission. Please go back and try again.');
     }
@@ -83,3 +88,7 @@ function consultation_handle(): void
     flash('success', 'Thanks! We received your request and will contact you shortly.');
     redirect($back);
 }
+
+// Loaded last, and after the helpers it depends on, so any page that requires
+// helpers.php can build $jsonLd before components/header.php renders it.
+require_once __DIR__ . '/seo.php';

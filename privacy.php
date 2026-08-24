@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
-$pageTitle = 'Privacy Policy — Hindustan Vidyut Udyog Solar';
+$pageTitle = 'Privacy Policy | HVU Solar';
+$metaDescription = 'How Hindustan Vidyut Udyog Solar collects, uses and protects the personal information you share with us.';
 $bannerTitle = 'Privacy Policy';
 $bannerSubtitle = 'How we collect, use and protect your personal information.';
 

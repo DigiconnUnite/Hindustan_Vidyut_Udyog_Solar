@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
 consultation_handle();
-$pageTitle = 'FAQ — Hindustan Vidyut Udyog Solar';
+$pageTitle = 'Solar FAQ — Subsidy, Cost, Warranty & Net Metering | HVU Solar';
+$metaDescription = 'Answers to the questions homeowners ask before going solar: what it costs, how the PM Surya Ghar subsidy works, how long it lasts and what we warrant.';
 $bannerTitle = 'Frequently Asked Questions';
 $bannerSubtitle = 'Answers to the questions we hear most from homeowners.';
 
@@ -34,6 +35,21 @@ $faqs = [
 ];
 
 $faqAnchor = fn(string $label): string => strtolower(preg_replace('/[^a-z0-9]+/i', '-', $label));
+
+// FAQPage rich result. Flattened across categories — schema.org has no notion of
+// FAQ sections, so every Q&A on the page goes into one mainEntity list.
+$jsonLd = [[
+    '@context' => 'https://schema.org',
+    '@type' => 'FAQPage',
+    'mainEntity' => array_map(
+        fn($qa) => [
+            '@type' => 'Question',
+            'name' => $qa[0],
+            'acceptedAnswer' => ['@type' => 'Answer', 'text' => $qa[1]],
+        ],
+        array_merge(...array_values($faqs))
+    ),
+]];
 
 require __DIR__ . '/components/header.php';
 require __DIR__ . '/components/page-banner.php';

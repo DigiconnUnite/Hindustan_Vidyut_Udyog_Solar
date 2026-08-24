@@ -5,14 +5,24 @@ $navLinks = [
     '/about.php' => ['About', 'users'],
     '/services.php' => ['Services', 'wrench'],
     '/pm-surya-ghar.php' => ['PM Surya Ghar', 'shield'],
+    '/solar-kits.php' => ['Solar Kits', 'package'],
     '/products.php' => ['Products', 'package'],
+    '/solar-calculator.php' => ['Calculator', 'settings'],
+    '/projects.php' => ['Projects', 'layout-dashboard'],
     '/blog.php' => ['Blog', 'clipboard'],
     '/contact.php' => ['Support', 'inbox'],
 ];
 $currentPath = '/' . basename($_SERVER['SCRIPT_NAME']);
-if ($currentPath === '/blog-details.php') {
-    $currentPath = '/blog.php';
-}
+// Detail pages have no nav entry of their own; highlight their listing page.
+$navAliases = [
+    '/blog-details.php' => '/blog.php',
+    '/product-details.php' => '/products.php',
+    '/financing.php' => '/solar-calculator.php',
+    '/certifications.php' => '/about.php',
+    '/service-areas.php' => '/about.php',
+    '/careers.php' => '/about.php',
+];
+$currentPath = $navAliases[$currentPath] ?? $currentPath;
 $socials = ['facebook' => setting('social_facebook', '#'), 'twitter' => setting('social_twitter', '#'), 'youtube' => setting('social_youtube', '#')];
 ?>
 <header id="site-header" class="fixed top-0 inset-x-0 z-40 bg-white shadow-lg">

@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
 consultation_handle();
-$pageTitle = 'Blog — Hindustan Vidyut Udyog Solar';
+$pageTitle = 'Solar Blog — Subsidy, Savings & Rooftop Guides | HVU Solar';
+$metaDescription = 'Practical guides on PM Surya Ghar subsidy, net metering, system sizing and what rooftop solar actually saves an Indian household.';
 
 $posts = require __DIR__ . '/data/blog-posts.php';
 usort($posts, fn($a, $b) => strcmp($b['published_at'], $a['published_at']));
@@ -39,7 +40,5 @@ require __DIR__ . '/components/page-banner.php';
     <?php endforeach; ?>
   </div>
 </section>
-
-<?php require __DIR__ . '/components/consultation-cta.php'; ?>
 
 <?php require __DIR__ . '/components/footer.php'; ?>

@@ -16,7 +16,31 @@ if (!$post) {
     redirect('/blog.php');
 }
 
-$pageTitle = $post['title'] . ' — Hindustan Vidyut Udyog Solar';
+$pageTitle = $post['title'] . ' | HVU Solar';
+$metaDescription = mb_substr((string) $post['excerpt'], 0, 155);
+$ogImage = $post['image'] ?? '/assets/images/hero-image-1.png';
+
+// Article rich result. The body is the section prose joined up — schema wants the
+// text, not the heading structure.
+$jsonLd = [[
+    '@context' => 'https://schema.org',
+    '@type' => 'BlogPosting',
+    'headline' => $post['title'],
+    'description' => $post['excerpt'],
+    'image' => APP_URL . ($post['image'] ?? '/assets/images/hero-image-1.png'),
+    'datePublished' => $post['published_at'],
+    'dateModified' => $post['published_at'],
+    'author' => ['@type' => 'Organization', 'name' => $post['author'] ?? 'HVU Solar Team'],
+    'publisher' => [
+        '@type' => 'Organization',
+        'name' => 'Hindustan Vidyut Udyog Solar',
+        'logo' => ['@type' => 'ImageObject', 'url' => APP_URL . '/assets/images/hvul-logo.png'],
+    ],
+    'mainEntityOfPage' => ['@type' => 'WebPage', '@id' => seo_canonical()],
+    'articleBody' => implode("
+
+", array_column($post['sections'], 1)),
+], seo_breadcrumb_schema($post['title'])];
 $related = array_values(array_filter($posts, fn($p) => $p['slug'] !== $post['slug']));
 usort($related, fn($a, $b) => strcmp($b['published_at'], $a['published_at']));
 $related = array_slice($related, 0, 3);
@@ -152,6 +176,5 @@ require __DIR__ . '/components/header.php';
 </section>
 <?php endif; ?>
 
-<?php require __DIR__ . '/components/consultation-cta.php'; ?>
 
 <?php require __DIR__ . '/components/footer.php'; ?>

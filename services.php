@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
 consultation_handle();
-$pageTitle = 'Services — Hindustan Vidyut Udyog Solar';
+$pageTitle = 'Solar Services — Survey, Installation, AMC & Upgrades | HVU Solar';
+$metaDescription = 'Free site survey, turnkey rooftop installation, annual maintenance contracts and system upgrades. Certified technicians across Gurgaon and Delhi NCR.';
 
 $services = db()->query('SELECT * FROM services ORDER BY sort_order')->fetchAll();
 

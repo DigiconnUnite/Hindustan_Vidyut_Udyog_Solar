@@ -30,7 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect('/contact.php');
 }
 
-$pageTitle = 'Support & Contact — Hindustan Vidyut Udyog Solar';
+$pageTitle = 'Contact Us — Free Solar Site Survey in Gurgaon | HVU Solar';
+$metaDescription = 'Book a free rooftop survey or raise a grievance. Call, WhatsApp or send us a message — our Gurgaon team responds the same working day.';
 $prefillProduct = trim($_GET['product'] ?? '');
 $prefillSubject = trim($_GET['subject'] ?? '');
 $bannerTitle = 'Support & Contact';

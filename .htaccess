@@ -1,8 +1,35 @@
 RewriteEngine On
 
 # Block direct access to sensitive folders
-RewriteRule ^(database|config)/ - [F,L]
+RewriteRule ^(database|config|tests)/ - [F,L]
 
 <FilesMatch "\.env$">
   Require all denied
 </FilesMatch>
+
+# Serve the generated sitemap at the conventional path.
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+# Compression — the CSS and JSON-LD payloads benefit most.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml \
+    application/javascript application/json application/ld+json image/svg+xml
+</IfModule>
+
+# Cache static assets hard; they are versioned by deploy, not by filename.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

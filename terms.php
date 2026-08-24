@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
-$pageTitle = 'Terms & Conditions — Hindustan Vidyut Udyog Solar';
+$pageTitle = 'Terms & Conditions | HVU Solar';
+$metaDescription = 'The terms governing use of this website and our rooftop solar installation services.';
 $bannerTitle = 'Terms & Conditions';
 $bannerSubtitle = 'The terms that govern your use of our website and services.';
 

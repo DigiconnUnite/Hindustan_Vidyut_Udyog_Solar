@@ -21,6 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description = trim($_POST['description'] ?? '');
     $specs = trim($_POST['specs'] ?? '');
     $sortOrder = (int) ($_POST['sort_order'] ?? 0);
+    $brand = trim($_POST['brand'] ?? '');
+    // Empty price means "not published" rather than free, so keep it NULL.
+    $numeric = fn(string $key) => trim($_POST[$key] ?? '') !== '' ? $_POST[$key] : null;
+    $price = ($v = $numeric('price')) !== null ? (float) $v : null;
+    $mrp = ($v = $numeric('mrp')) !== null ? (float) $v : null;
+    $wattage = ($v = $numeric('wattage')) !== null ? (int) $v : null;
+    $warranty = ($v = $numeric('warranty_years')) !== null ? (int) $v : null;
+    $inStock = isset($_POST['in_stock']) ? 1 : 0;
 
     if ($name === '' || $category === '') {
         flash('error', 'Name and category are required.');
@@ -41,18 +49,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    $shared = [$name, $category, $description, $specs, $sortOrder, $brand, $price, $mrp, $wattage, $warranty, $inStock];
+
     if ($id) {
+        // Only overwrite image_path when a new file actually came through, or an
+        // edit that leaves the file input empty would blank the existing image.
         if ($imagePath) {
-            db()->prepare('UPDATE products SET name=?, category=?, description=?, specs=?, sort_order=?, image_path=? WHERE id=?')
-                ->execute([$name, $category, $description, $specs, $sortOrder, $imagePath, $id]);
+            db()->prepare('UPDATE products SET name=?, category=?, description=?, specs=?, sort_order=?, brand=?, price=?, mrp=?, wattage=?, warranty_years=?, in_stock=?, image_path=? WHERE id=?')
+                ->execute([...$shared, $imagePath, $id]);
         } else {
-            db()->prepare('UPDATE products SET name=?, category=?, description=?, specs=?, sort_order=? WHERE id=?')
-                ->execute([$name, $category, $description, $specs, $sortOrder, $id]);
+            db()->prepare('UPDATE products SET name=?, category=?, description=?, specs=?, sort_order=?, brand=?, price=?, mrp=?, wattage=?, warranty_years=?, in_stock=? WHERE id=?')
+                ->execute([...$shared, $id]);
         }
         flash('success', 'Product updated.');
     } else {
-        db()->prepare('INSERT INTO products (name, category, description, specs, sort_order, image_path) VALUES (?,?,?,?,?,?)')
-            ->execute([$name, $category, $description, $specs, $sortOrder, $imagePath]);
+        db()->prepare('INSERT INTO products (name, category, description, specs, sort_order, brand, price, mrp, wattage, warranty_years, in_stock, image_path) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
+            ->execute([...$shared, $imagePath]);
         flash('success', 'Product added.');
     }
     redirect('/admin/products.php');
@@ -73,6 +85,7 @@ require __DIR__ . '/../components/admin-header.php';
       <tr class="text-left text-gray-500 border-b border-gray-100">
         <th class="py-2 pr-4">Name</th>
         <th class="py-2 pr-4">Category</th>
+        <th class="py-2 pr-4">Price</th>
         <th class="py-2 pr-4">Status</th>
         <th class="py-2 pr-4">Actions</th>
       </tr>
@@ -82,6 +95,7 @@ require __DIR__ . '/../components/admin-header.php';
         <tr class="border-b border-gray-50">
           <td class="py-3 pr-4 font-medium text-gray-900"><?= e($product['name']) ?></td>
           <td class="py-3 pr-4 text-gray-600"><?= e(ucfirst($product['category'])) ?></td>
+          <td class="py-3 pr-4 text-gray-600"><?= $product['price'] ? '₹' . number_format((float) $product['price']) : '—' ?></td>
           <td class="py-3 pr-4">
             <span class="badge <?= $product['is_active'] ? 'bg-primary-50 text-primary-700' : 'bg-gray-100 text-gray-500' ?>">
               <?= $product['is_active'] ? 'Active' : 'Removed' ?>
@@ -131,6 +145,34 @@ require __DIR__ . '/../components/admin-header.php';
         <input type="text" name="specs" id="product-specs" class="input mt-1">
       </div>
       <div>
+        <label class="text-sm font-medium text-gray-700">Brand</label>
+        <input type="text" name="brand" id="product-brand" class="input mt-1">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-sm font-medium text-gray-700">Price (₹)</label>
+          <input type="number" name="price" id="product-price" step="0.01" min="0" class="input mt-1">
+        </div>
+        <div>
+          <label class="text-sm font-medium text-gray-700">MRP (₹)</label>
+          <input type="number" name="mrp" id="product-mrp" step="0.01" min="0" class="input mt-1">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-sm font-medium text-gray-700">Wattage (W)</label>
+          <input type="number" name="wattage" id="product-wattage" min="0" class="input mt-1">
+        </div>
+        <div>
+          <label class="text-sm font-medium text-gray-700">Warranty (years)</label>
+          <input type="number" name="warranty_years" id="product-warranty" min="0" max="50" class="input mt-1">
+        </div>
+      </div>
+      <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
+        <input type="checkbox" name="in_stock" id="product-stock" value="1" checked class="rounded border-gray-300 text-primary-600">
+        In stock
+      </label>
+      <div>
         <label class="text-sm font-medium text-gray-700">Sort Order</label>
         <input type="number" name="sort_order" id="product-sort" class="input mt-1" value="0">
       </div>
@@ -158,6 +200,12 @@ function openProductModal(product) {
     document.getElementById('product-description').value = product.description || '';
     document.getElementById('product-specs').value = product.specs || '';
     document.getElementById('product-sort').value = product.sort_order;
+    document.getElementById('product-brand').value = product.brand || '';
+    document.getElementById('product-price').value = product.price || '';
+    document.getElementById('product-mrp').value = product.mrp || '';
+    document.getElementById('product-wattage').value = product.wattage || '';
+    document.getElementById('product-warranty').value = product.warranty_years || '';
+    document.getElementById('product-stock').checked = product.in_stock != 0;
   } else {
     title.textContent = 'Add Product';
     document.getElementById('product-id').value = '';
@@ -165,6 +213,12 @@ function openProductModal(product) {
     document.getElementById('product-description').value = '';
     document.getElementById('product-specs').value = '';
     document.getElementById('product-sort').value = '0';
+    document.getElementById('product-brand').value = '';
+    document.getElementById('product-price').value = '';
+    document.getElementById('product-mrp').value = '';
+    document.getElementById('product-wattage').value = '';
+    document.getElementById('product-warranty').value = '';
+    document.getElementById('product-stock').checked = true;
   }
 }
 </script>

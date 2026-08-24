@@ -109,6 +109,7 @@ ON DUPLICATE KEY UPDATE name = name;
 
 INSERT INTO site_settings (`key`, `value`) VALUES
   ('company_phone', '+91 98765 43210'),
+  ('company_whatsapp', '+91 98765 43210'),
   ('company_email', 'info@hvusolar.com'),
   ('company_address', 'Hindustan Vidyut Udyog Solar, Industrial Area, India'),
   ('stat_systems_installed', '1200+'),
