@@ -362,7 +362,49 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
   </div>
 </section>
 
-<?php require __DIR__ . '/components/consultation-cta.php'; ?>
+<!-- Why HVU: image left, copy right. -->
+<section class="mx-auto container px-6 py-20">
+  <div class="grid gap-12 md:grid-cols-2 md:items-center">
+    <div class="overflow-hidden rounded-3xl border border-gray-900">
+      <img src="/assets/images/green-hand-with-solar.png" alt="Rooftop solar installation by Hindustan Vidyut Udyog"
+           loading="lazy" class="h-full w-full object-cover aspect-[4/3]">
+    </div>
+
+    <div>
+      <span class="inline-flex rounded-full border border-gray-900 px-4 py-1.5 text-sm font-medium text-primary-700">
+        Why Hindustan Vidyut Udyog
+      </span>
+      <h2 class="mt-5 text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
+        One team from site survey to your first zero-rupee bill
+      </h2>
+      <p class="mt-4 text-gray-600 leading-relaxed">
+        Most solar problems start where responsibility changes hands. We keep design, installation,
+        DISCOM approval and subsidy paperwork under one roof, so there is never a vendor to chase
+        and never a step that falls between two people.
+      </p>
+
+      <ul class="mt-6 space-y-3">
+        <?php foreach ([
+            'Free site survey, system design and quotation',
+            'PM Surya Ghar subsidy filed and tracked for you',
+            'Tier-1 panels with a 25-year performance warranty',
+            'In-house AMC team, not a third-party contractor',
+        ] as $point): ?>
+          <li class="flex items-start gap-3 text-gray-700">
+            <span class="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-500 text-ink">
+              <?= icon('check', 'h-3.5 w-3.5') ?>
+            </span>
+            <?= e($point) ?>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+
+      <a href="/about.php" class="btn-outline mt-8">
+        More About Us <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
+      </a>
+    </div>
+  </div>
+</section>
 
 <?php
 $faqEyebrow = 'Questions, Answered';

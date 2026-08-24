@@ -5,6 +5,13 @@ if (current_user()) {
     redirect('/admin/index.php');
 }
 
+// One form, two staff roles. ?role= only labels the page and scopes who may
+// sign in here; it is never trusted as the user's actual role.
+$roleParam = $_GET['role'] ?? $_POST['role'] ?? 'admin';
+if (!in_array($roleParam, ['admin', 'staff'], true)) {
+    $roleParam = 'admin';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $email = trim($_POST['email'] ?? '');
@@ -15,16 +22,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password_hash'])) {
+        // An admin may use the staff door, but not the reverse.
+        if ($roleParam === 'admin' && $user['role'] !== 'admin') {
+            flash('error', 'This account does not have administrator access.');
+            redirect('/admin/login.php?role=' . $roleParam);
+        }
         session_regenerate_id(true);
         $_SESSION['user_id'] = $user['id'];
         redirect('/admin/index.php');
     }
 
     flash('error', 'Invalid email or password.');
-    redirect('/admin/login.php');
+    redirect('/admin/login.php?role=' . $roleParam);
 }
 
-$pageTitle = 'Admin Login';
+$portalLabel = $roleParam === 'staff' ? 'Staff Portal' : 'Admin Portal';
+$pageTitle = $portalLabel;
 require_once __DIR__ . '/../components/icon.php';
 ?>
 <!doctype html>
@@ -43,13 +56,14 @@ require_once __DIR__ . '/../components/icon.php';
     <div class="text-center mb-6">
       <span class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary-500 text-white"><?= icon('sun', 'h-6 w-6') ?></span>
       <h1 class="mt-3 text-xl font-bold text-gray-900">Hindustan Vidyut Udyog</h1>
-      <p class="text-sm text-gray-500">Admin Portal</p>
+      <p class="text-sm text-gray-500"><?= e($portalLabel) ?></p>
     </div>
 
     <?php require __DIR__ . '/../components/flash-message.php'; ?>
 
     <form method="post" action="/admin/login.php" class="space-y-4">
       <?= csrf_field() ?>
+      <input type="hidden" name="role" value="<?= e($roleParam) ?>">
       <div>
         <label class="text-sm font-medium text-gray-700">Email</label>
         <input type="email" name="email" required class="input mt-1" autofocus>

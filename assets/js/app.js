@@ -2,6 +2,12 @@ document.getElementById('nav-toggle')?.addEventListener('click', () => {
   document.getElementById('nav-mobile')?.classList.toggle('hidden');
 });
 
+// Close the login dropdown when clicking anywhere outside it.
+document.addEventListener('click', (e) => {
+  const m = document.getElementById('login-menu');
+  if (m && !m.contains(e.target)) m.open = false;
+});
+
 const ribbon = document.getElementById('header-ribbon');
 if (ribbon) {
   const header = document.getElementById('site-header');

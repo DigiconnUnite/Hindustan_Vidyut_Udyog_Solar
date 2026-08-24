@@ -24,6 +24,8 @@ $navAliases = [
 ];
 $currentPath = $navAliases[$currentPath] ?? $currentPath;
 $socials = ['facebook' => setting('social_facebook', '#'), 'twitter' => setting('social_twitter', '#'), 'youtube' => setting('social_youtube', '#')];
+$phone = setting('company_phone', '+91 98765 43210');
+$waDigits = preg_replace('/\D/', '', setting('company_whatsapp', $phone));
 ?>
 <header id="site-header" class="fixed top-0 inset-x-0 z-40 bg-white shadow-lg">
   <!-- Row 1: utility ribbon -->
@@ -61,16 +63,27 @@ $socials = ['facebook' => setting('social_facebook', '#'), 'twitter' => setting(
     </a>
 
     <div class="hidden md:flex items-center gap-3 text-sm">
-      <a href="/contact.php" class="inline-flex items-center gap-2 rounded-lg border border-primary-700 px-4 py-2 font-medium text-primary-700 hover:bg-primary-50">
-        <?= icon('mail', 'h-4 w-4') ?> Contact Us
+      <a href="tel:<?= e($phone) ?>" class="inline-flex h-11 items-center gap-2 rounded-lg border border-primary-700 px-4 font-medium text-primary-700 hover:bg-primary-50">
+        <?= icon('phone', 'h-4 w-4') ?> Call Now
       </a>
-      <a href="/contact.php#grievance" class="inline-flex items-center gap-2 rounded-lg border border-primary-700 px-4 py-2 font-medium text-primary-700 hover:bg-primary-50">
-        <?= icon('inbox', 'h-4 w-4') ?> Grievance
+      <a href="https://wa.me/<?= e($waDigits) ?>" target="_blank" rel="noopener" class="inline-flex h-11 items-center gap-2 rounded-lg bg-[#25D366] px-4 font-medium text-white hover:bg-[#1ebe5b]">
+        <?= icon('whatsapp', 'h-4 w-4') ?> WhatsApp
       </a>
-      <a href="/contact.php" class="inline-flex items-center gap-2 rounded-lg bg-accent-500 py-1.5 pl-4 pr-1.5 font-semibold text-white hover:bg-accent-600">
+      <a href="/contact.php" class="inline-flex h-11 items-center gap-2 rounded-lg bg-accent-500 pl-4 pr-1.5 font-semibold text-white hover:bg-accent-600">
         Get a Quote
         <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-accent-600"><?= icon('arrow-right', 'h-4 w-4') ?></span>
       </a>
+      <details class="relative" id="login-menu">
+        <summary class="inline-flex h-11 cursor-pointer list-none items-center gap-2 rounded-lg bg-primary-700 px-4 font-semibold text-white hover:bg-primary-800">
+          <?= icon('log-in', 'h-4 w-4') ?> Login
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="absolute right-0 mt-2 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+          <a href="/admin/login.php?role=admin" class="block px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-700">Administrator Login</a>
+          <a href="/consumer-login.php" class="block px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-700">Consumer Login</a>
+          <a href="/admin/login.php?role=staff" class="block px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-700">Staff Login</a>
+        </div>
+      </details>
     </div>
 
     <button id="nav-toggle" data-nav-anim class="md:hidden text-gray-700" aria-label="Toggle menu">
@@ -94,8 +107,22 @@ $socials = ['facebook' => setting('social_facebook', '#'), 'twitter' => setting(
     <?php foreach ($navLinks as $href => [$label, $ico]): ?>
       <a href="<?= e($href) ?>" class="flex items-center gap-2 font-medium hover:text-primary-600 <?= $currentPath === $href ? 'text-primary-600' : 'text-gray-700' ?>"><?= icon($ico, 'h-4 w-4') ?><?= e($label) ?></a>
     <?php endforeach; ?>
-    <a href="/contact.php" class="mt-2 flex w-full items-center justify-between rounded-lg bg-accent-500 py-1.5 pl-4 pr-1.5 text-sm font-semibold text-white hover:bg-accent-600">Get a Quote
+    <div class="mt-2 grid grid-cols-2 gap-2">
+      <a href="tel:<?= e($phone) ?>" class="flex h-11 items-center justify-center gap-2 rounded-lg border border-primary-700 px-3 text-sm font-medium text-primary-700"><?= icon('phone', 'h-4 w-4') ?> Call</a>
+      <a href="https://wa.me/<?= e($waDigits) ?>" target="_blank" rel="noopener" class="flex h-11 items-center justify-center gap-2 rounded-lg bg-[#25D366] px-3 text-sm font-medium text-white"><?= icon('whatsapp', 'h-4 w-4') ?> WhatsApp</a>
+    </div>
+    <a href="/contact.php" class="mt-2 flex h-11 w-full items-center justify-between rounded-lg bg-accent-500 pl-4 pr-1.5 text-sm font-semibold text-white hover:bg-accent-600">Get a Quote
       <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-accent-600"><?= icon('arrow-right', 'h-4 w-4') ?></span>
     </a>
+    <details>
+      <summary class="flex h-11 w-full cursor-pointer list-none items-center justify-center gap-2 rounded-lg bg-primary-700 px-3 text-sm font-semibold text-white"><?= icon('log-in', 'h-4 w-4') ?> Login</summary>
+      <a href="/admin/login.php?role=admin" class="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-primary-50">Administrator Login</a>
+      <a href="/consumer-login.php" class="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-primary-50">Consumer Login</a>
+      <a href="/admin/login.php?role=staff" class="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-primary-50">Staff Login</a>
+    </details>
   </nav>
 </header>
+<style>
+  /* Native disclosure: no JS. Hide the default triangle marker. */
+  summary::-webkit-details-marker{display:none}
+</style>

@@ -185,7 +185,7 @@ $footerSocials = [
 
   <!-- Row 4: legal bar -->
   <div class="border-t border-white/10 px-6 py-5 flex flex-col md:flex-row md:items-center gap-4 text-sm text-white/80">
-    <p class="md:flex-1">&copy; <?= date('Y') ?> Hindustan Vidyut Udyog Solar. All Rights Reserved.</p>
+    <p class="md:flex-1">&copy; <?= date('Y') ?> <span class="text-accent-400 border-b  border-accent-400">Hindustan Vidyut Udyog Solar</span>. All Rights Reserved.</p>
     <p class="md:text-center">Designed &amp; Developed by
       <a href="https://digiconnunite.com" target="_blank" rel="noopener" class="font-medium hover:text-accent-400">Digiconn Unite</a>
     </p>

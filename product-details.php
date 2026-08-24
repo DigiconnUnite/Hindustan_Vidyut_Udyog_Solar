@@ -113,7 +113,6 @@ $bannerSubtitle = $product['description'];
 
 require_once __DIR__ . '/components/icon.php';
 require __DIR__ . '/components/header.php';
-require __DIR__ . '/components/page-banner.php';
 ?>
 
 <section class="mx-auto container px-6 py-12 md:py-16">
@@ -270,13 +269,8 @@ require __DIR__ . '/components/page-banner.php';
     <aside id="enquiry" class="scroll-mt-44 lg:sticky lg:top-44">
       <div class="rounded-3xl border border-gray-900 bg-ink p-6 md:p-7">
         <span class="inline-flex items-center rounded-full border border-accent-400 px-4 py-1.5 text-xs font-medium text-accent-400">
-          Free Site Survey
+       Get a Free Quote
         </span>
-        <h2 class="mt-4 text-2xl font-extrabold text-white leading-tight">Get a Free Quote</h2>
-        <p class="mt-2 text-sm text-gray-300">
-          Share your details and our solar advisor will call you back — usually within one working day.
-        </p>
-
         <div class="mt-5">
           <?php require __DIR__ . '/components/flash-message.php'; ?>
         </div>
@@ -285,28 +279,28 @@ require __DIR__ . '/components/page-banner.php';
           <?= csrf_field() ?>
 
           <div>
-            <label for="lead-name" class="text-sm font-medium text-accent-400">Your Name <span class="text-red-400">*</span></label>
+            <label for="lead-name" class="text-sm font-medium text-gray-400">Your Name <span class="text-red-400">*</span></label>
             <input id="lead-name" type="text" name="name" required autocomplete="name" placeholder="e.g. Jason Samuel" class="input mt-1 bg-white py-2.5">
           </div>
 
           <div>
-            <label for="lead-phone" class="text-sm font-medium text-accent-400">Phone <span class="text-red-400">*</span></label>
+            <label for="lead-phone" class="text-sm font-medium text-gray-400">Phone <span class="text-red-400">*</span></label>
             <input id="lead-phone" type="tel" name="phone" required autocomplete="tel" inputmode="tel" placeholder="e.g. +91 98765 43210" class="input mt-1 bg-white py-2.5">
           </div>
 
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label for="lead-email" class="text-sm font-medium text-accent-400">Email</label>
+              <label for="lead-email" class="text-sm font-medium text-gray-400">Email</label>
               <input id="lead-email" type="email" name="email" autocomplete="email" placeholder="you@example.com" class="input mt-1 bg-white py-2.5">
             </div>
             <div>
-              <label for="lead-pincode" class="text-sm font-medium text-accent-400">PIN Code</label>
+              <label for="lead-pincode" class="text-sm font-medium text-gray-400">PIN Code</label>
               <input id="lead-pincode" type="text" name="pincode" inputmode="numeric" maxlength="6" placeholder="e.g. 226001" class="input mt-1 bg-white py-2.5">
             </div>
           </div>
 
           <div>
-            <label for="lead-message" class="text-sm font-medium text-accent-400">Message</label>
+            <label for="lead-message" class="text-sm font-medium text-gray-400">Message</label>
             <textarea id="lead-message" name="message" rows="3" placeholder="Roof size, monthly bill, or anything else we should know" class="input mt-1 bg-white"></textarea>
           </div>
 
