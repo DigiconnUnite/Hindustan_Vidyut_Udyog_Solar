@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
-consultation_handle();
 $pageTitle = 'Solar Blog — Subsidy, Savings & Rooftop Guides | HVU Solar';
 $metaDescription = 'Practical guides on PM Surya Ghar subsidy, net metering, system sizing and what rooftop solar actually saves an Indian household.';
 

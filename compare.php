@@ -2,7 +2,7 @@
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/config/product-content.php';
 require_once __DIR__ . '/config/solar-calc.php';
-consultation_handle();
+lead_handle(['source' => 'contact']);
 
 // ?ids=1,2,3 — cap at four so the table stays readable, and ignore junk.
 $ids = array_slice(

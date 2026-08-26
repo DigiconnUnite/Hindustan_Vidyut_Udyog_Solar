@@ -7,6 +7,57 @@
  */
 
 /**
+ * Reshapes a solar_kits row into the products row shape.
+ *
+ * Kits live in their own table but are sold, listed and browsed as products, so
+ * rather than duplicating the grid and detail templates we normalise the row once
+ * here and let the existing product markup render it. The raw kit stays on `_kit`
+ * for the handful of kit-only bits (kW badge, subsidy line, EMI, generation).
+ *
+ * The synthetic id is a 'kit-' prefixed string so it can never collide with an
+ * integer product id — anything that casts it with (int) gets 0, not a real row.
+ */
+function kit_as_product(array $kit): array
+{
+    $subsidy = (float) $kit['subsidy'];
+
+    return [
+        'id' => 'kit-' . $kit['slug'],
+        'name' => $kit['name'],
+        'slug' => $kit['slug'],
+        'category' => 'kit',
+        'description' => $kit['suits'],
+        // `includes` is newline-authored; product_specs() splits on pipes.
+        'specs' => implode(' | ', array_filter(array_map('trim', explode("\n", (string) $kit['includes'])))),
+        'image_path' => $kit['image_path'],
+        'is_active' => $kit['is_active'],
+        'sort_order' => $kit['sort_order'],
+        // Net of subsidy is the price we advertise; the gross becomes the struck-through
+        // "mrp", which makes the existing discount badge read as the subsidy saving.
+        'price' => (float) $kit['price'] - $subsidy,
+        'mrp' => $subsidy > 0 ? (float) $kit['price'] : null,
+        'wattage' => (int) round((float) $kit['system_kw'] * 1000),
+        'brand' => null,
+        'warranty_years' => null,
+        'datasheet_path' => null,
+        'in_stock' => 1,
+        'rating' => null,
+        'review_count' => 0,
+        '_kit' => $kit,
+    ];
+}
+
+/**
+ * Detail-page URL for a product or a normalised kit row.
+ */
+function product_url(array $row): string
+{
+    return isset($row['_kit'])
+        ? '/product-details.php?kit=' . rawurlencode($row['slug'])
+        : '/product-details.php?id=' . (int) $row['id'];
+}
+
+/**
  * Turns the free-text `specs` column into label/value rows.
  *
  * The column is authored by hand in the admin panel as a pipe-delimited string,
@@ -95,6 +146,22 @@ function product_copy(string $category): array
     ];
 
     $copy = [
+        'kit' => [
+            'trust' => ['Complete installed system', 'Subsidy applied upfront', 'Net metering handled'],
+            'benefits_title' => 'Why Choose This Kit',
+            'benefits' => [
+                ['package', 'One Price, Nothing Missing', 'Panels, inverter, mounting structure, cabling, safety gear and installation are all in the figure quoted — there is no second invoice for the parts nobody mentioned.'],
+                ['clipboard', 'Subsidy Already Deducted', 'The PM Surya Ghar amount is taken off the price you see, and we file the application for you rather than leaving you to claim it back later.'],
+                ['wrench', 'Sized for Real Households', 'Each kit is matched to a monthly consumption band, so you pick by your electricity bill instead of guessing at kilowatts.'],
+                ['shield', 'Single Point of Accountability', 'One team supplies and installs the whole system, which means one warranty conversation if anything ever needs attention.'],
+            ],
+            'faqs' => [
+                ['How do I know which kit size I need?', 'Match the kit to your average monthly units, shown on your electricity bill. As a rough guide a 3kW kit suits a bill of around 2500 to 3500 rupees a month. The free site survey confirms the size before you commit.'],
+                ['Is the installation really included?', 'Yes. The price covers supply, mounting structure, cabling, labour and commissioning for a standard Delhi-NCR rooftop. Unusual roofs — very high rise, heavy structural work, long cable runs — are quoted separately after the survey.'],
+                ['How much roof space does it need?', 'Budget roughly 70 to 100 square feet of shade-free roof per kilowatt. A 3kW kit therefore needs about 250 to 300 square feet.'],
+                ['Who handles the subsidy and net metering?', 'We do. We prepare the PM Surya Ghar application and the DISCOM net metering paperwork, and follow it through to approval. Note that the subsidy covers grid-connected residential systems only — off-grid, hybrid and commercial kits are not scheme eligible.'],
+            ],
+        ],
         'panel' => [
             'trust' => ['25-year performance warranty', 'BIS certified', 'Subsidy eligible'],
             'benefits_title' => 'Why Choose This Panel',

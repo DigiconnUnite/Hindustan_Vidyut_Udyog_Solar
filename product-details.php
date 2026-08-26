@@ -3,57 +3,66 @@ require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/config/product-content.php';
 require_once __DIR__ . '/config/solar-calc.php';
 
-$id = (int) ($_GET['id'] ?? 0);
-$stmt = db()->prepare('SELECT * FROM products WHERE id = ? AND is_active = 1');
-$stmt->execute([$id]);
-$product = $stmt->fetch();
+// One page serves both catalogue products (?id=) and kits (?kit=). Kits come from their
+// own table but are normalised into the product row shape, so everything below this
+// point renders identically for either.
+$kitSlug = trim($_GET['kit'] ?? '');
+
+if ($kitSlug !== '') {
+    $stmt = db()->prepare('SELECT * FROM solar_kits WHERE slug = ? AND is_active = 1');
+    $stmt->execute([$kitSlug]);
+    $kitRow = $stmt->fetch();
+    $product = $kitRow ? kit_as_product($kitRow) : null;
+} else {
+    $stmt = db()->prepare('SELECT * FROM products WHERE id = ? AND is_active = 1');
+    $stmt->execute([(int) ($_GET['id'] ?? 0)]);
+    $product = $stmt->fetch() ?: null;
+}
 
 if (!$product) {
     redirect('/products.php');
 }
 
-// Own POST handler — deliberately not consultation_handle(), which would also
-// fire on this request and insert a second, emptier lead.
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    csrf_verify();
+$kit = $product['_kit'] ?? null;
+$detailUrl = product_url($product);
 
-    $back = '/product-details.php?id=' . $product['id'] . '#enquiry';
-    $name = trim($_POST['name'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $pincode = trim($_POST['pincode'] ?? '');
-    $message = trim($_POST['message'] ?? '');
-
-    if ($name === '' || $phone === '') {
-        flash('error', 'Name and phone are required.');
-        redirect($back);
-    }
-
-    // leads has no product column; keep it in the message so admin sees it.
-    $message = 'Product: ' . $product['name'] . ($message !== '' ? "\n\n" . $message : '');
-    // no pincode column either — address is the closest fit
-    $address = $pincode !== '' ? 'PIN ' . $pincode : null;
-
-    db()->prepare('INSERT INTO leads (name, phone, email, address, message) VALUES (?, ?, ?, ?, ?)')
-        ->execute([$name, $phone, $email ?: null, $address, $message]);
-
-    flash('success', 'Thanks! We received your enquiry and will call you shortly.');
-    redirect($back);
-}
+// leads has no product column, so the product name rides in the message. Taken from the
+// row we just loaded, not from the POST body, so it cannot be forged.
+lead_handle([
+    'source' => 'product',
+    'back' => $detailUrl . '#enquiry',
+    'prepend' => ($kit ? 'Kit: ' : 'Product: ') . $product['name'],
+    'success' => 'Thanks! We received your enquiry and will call you shortly.',
+]);
 
 $specs = product_specs($product['specs']);
 $copy = product_copy($product['category']);
 
-$relStmt = db()->prepare('SELECT * FROM products WHERE category = ? AND id != ? AND is_active = 1 ORDER BY sort_order LIMIT 3');
-$relStmt->execute([$product['category'], $product['id']]);
-$related = $relStmt->fetchAll();
-
-// Only three products are seeded, so a category usually has no siblings.
-// Fall back to any other product rather than rendering an empty section.
-if (!$related) {
-    $relStmt = db()->prepare('SELECT * FROM products WHERE id != ? AND is_active = 1 ORDER BY sort_order LIMIT 3');
-    $relStmt->execute([$product['id']]);
+if ($kit) {
+    // Other kits of the same type first, then any other kit.
+    $relStmt = db()->prepare('SELECT * FROM solar_kits WHERE kit_type = ? AND id != ? AND is_active = 1 ORDER BY sort_order LIMIT 3');
+    $relStmt->execute([$kit['kit_type'], $kit['id']]);
     $related = $relStmt->fetchAll();
+
+    if (!$related) {
+        $relStmt = db()->prepare('SELECT * FROM solar_kits WHERE id != ? AND is_active = 1 ORDER BY sort_order LIMIT 3');
+        $relStmt->execute([$kit['id']]);
+        $related = $relStmt->fetchAll();
+    }
+
+    $related = array_map('kit_as_product', $related);
+} else {
+    $relStmt = db()->prepare('SELECT * FROM products WHERE category = ? AND id != ? AND is_active = 1 ORDER BY sort_order LIMIT 3');
+    $relStmt->execute([$product['category'], $product['id']]);
+    $related = $relStmt->fetchAll();
+
+    // Only three products are seeded, so a category usually has no siblings.
+    // Fall back to any other product rather than rendering an empty section.
+    if (!$related) {
+        $relStmt = db()->prepare('SELECT * FROM products WHERE id != ? AND is_active = 1 ORDER BY sort_order LIMIT 3');
+        $relStmt->execute([$product['id']]);
+        $related = $relStmt->fetchAll();
+    }
 }
 
 $phoneNumber = setting('company_phone', '+91 98765 43210');
@@ -64,13 +73,24 @@ $productImage = $product['image_path']
     ? '/' . e($product['image_path'])
     : 'https://placehold.co/800x600?text=' . urlencode($product['name']);
 
-$revStmt = db()->prepare('SELECT * FROM product_reviews WHERE product_id = ? AND is_approved = 1 ORDER BY created_at DESC');
-$revStmt->execute([$product['id']]);
-$reviews = $revStmt->fetchAll();
+// product_reviews is keyed to catalogue products only; kits have no rows to fetch.
+$reviews = [];
+if (!$kit) {
+    $revStmt = db()->prepare('SELECT * FROM product_reviews WHERE product_id = ? AND is_approved = 1 ORDER BY created_at DESC');
+    $revStmt->execute([$product['id']]);
+    $reviews = $revStmt->fetchAll();
+}
 
 $discount = ($product['mrp'] && $product['price'] && $product['mrp'] > $product['price'])
     ? (int) round(100 - ($product['price'] / $product['mrp'] * 100))
     : 0;
+
+$kitTypes = ['ongrid' => 'On-Grid', 'hybrid' => 'Hybrid', 'offgrid' => 'Off-Grid'];
+$kitKw = $kit ? rtrim(rtrim(number_format((float) $kit['system_kw'], 1), '0'), '.') : '';
+$kitEmi = $kit ? solar_emi((int) $product['price'], (float) setting('finance_rate', '9.5'), 60) : 0;
+$kitYears = $kit
+    ? solar_payback_years((int) $product['price'], (int) $kit['monthly_units'] * 12 * (float) setting('default_tariff', '8.0'))
+    : null;
 
 $pageTitle = $product['name'] . ' — Price, Specs & Warranty | HVU Solar';
 $metaDescription = mb_substr(trim((string) $product['description']), 0, 155)
@@ -91,7 +111,7 @@ $jsonLd = [array_filter([
         'price' => (string) (int) $product['price'],
         'priceCurrency' => 'INR',
         'availability' => $product['in_stock'] ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-        'url' => APP_URL . '/product-details.php?id=' . $product['id'],
+        'url' => APP_URL . $detailUrl,
         'seller' => ['@type' => 'Organization', 'name' => 'Hindustan Vidyut Udyog Solar'],
     ] : null,
     'aggregateRating' => ($product['rating'] && $product['review_count']) ? [
@@ -124,7 +144,7 @@ require __DIR__ . '/components/header.php';
         <img src="<?= $productImage ?>" class="h-full w-full object-cover" alt="<?= e($product['name']) ?>">
         <span class="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 text-xs font-semibold text-primary-700 shadow-sm">
           <?= icon('package', 'h-3.5 w-3.5') ?>
-          <?= e(ucfirst($product['category'])) ?>
+          <?= e($kit ? $kitKw . ' kW ' . ($kitTypes[$kit['kit_type']] ?? $kit['kit_type']) . ' Kit' : ucfirst($product['category'])) ?>
         </span>
       </div>
 
@@ -160,20 +180,45 @@ require __DIR__ . '/components/header.php';
             <span class="text-4xl font-extrabold text-gray-900"><?= e(inr((int) $product['price'])) ?></span>
             <?php if ($discount > 0): ?>
               <span class="text-lg text-gray-400 line-through"><?= e(inr((int) $product['mrp'])) ?></span>
-              <span class="badge bg-accent-500 font-bold text-ink"><?= $discount ?>% off</span>
+              <span class="badge bg-accent-500 font-bold text-ink">
+                <?= $kit ? e(inr((int) $kit['subsidy'])) . ' subsidy' : $discount . '% off' ?>
+              </span>
             <?php endif; ?>
           </p>
-          <?php if (!$product['in_stock']): ?>
+          <?php if (!$kit && !$product['in_stock']): ?>
             <span class="badge bg-gray-100 text-gray-600">Out of stock</span>
           <?php endif; ?>
         </div>
-        <p class="mt-1.5 text-sm text-gray-500">
-          Inclusive of taxes · installation quoted separately after a
-          <a href="/contact.php" class="font-medium text-primary-700 hover:text-primary-600">free site survey</a>.
-        </p>
+        <?php if ($kit): ?>
+          <p class="mt-1.5 text-sm text-gray-500">
+            Complete installed system · or <span class="font-semibold text-gray-900"><?= e(inr($kitEmi)) ?>/month</span> for 60 months.
+            <?php if ($kit['subsidy'] <= 0): ?>Subsidy does not apply to this system.<?php endif; ?>
+          </p>
+        <?php else: ?>
+          <p class="mt-1.5 text-sm text-gray-500">
+            Inclusive of taxes · installation quoted separately after a
+            <a href="/contact.php" class="font-medium text-primary-700 hover:text-primary-600">free site survey</a>.
+          </p>
+        <?php endif; ?>
       <?php endif; ?>
 
       <p class="mt-5 text-lg text-gray-600 leading-relaxed"><?= e($product['description']) ?></p>
+
+      <?php if ($kit): ?>
+        <dl class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <?php foreach ([
+              ['System size', $kitKw . ' kW'],
+              ['Type', $kitTypes[$kit['kit_type']] ?? $kit['kit_type']],
+              ['Generates', '~' . number_format((int) $kit['monthly_units']) . ' units/mo'],
+              ['Pays back in', $kitYears === null ? '—' : $kitYears . ' yrs'],
+          ] as [$label, $value]): ?>
+            <div class="rounded-2xl border border-gray-900 bg-primary-50 px-4 py-3">
+              <dt class="text-xs uppercase tracking-wide text-gray-500"><?= e($label) ?></dt>
+              <dd class="mt-1 font-bold text-gray-900"><?= e($value) ?></dd>
+            </div>
+          <?php endforeach; ?>
+        </dl>
+      <?php endif; ?>
 
       <?php if ($product['datasheet_path'] && is_file(__DIR__ . '/' . $product['datasheet_path'])): ?>
         <a href="/<?= e($product['datasheet_path']) ?>" target="_blank" rel="noopener"
@@ -182,8 +227,21 @@ require __DIR__ . '/components/header.php';
         </a>
       <?php endif; ?>
 
-      <!-- Specifications -->
-      <?php if ($specs): ?>
+      <!-- Specifications. A kit's `specs` are component names, not label/value pairs,
+           so they list as a checklist rather than going through product_specs(). -->
+      <?php if ($kit): ?>
+        <div class="mt-12">
+          <h2 class="text-2xl font-bold text-gray-900">What's included</h2>
+          <ul class="mt-5 overflow-hidden rounded-2xl border border-gray-900">
+            <?php foreach (array_filter(array_map('trim', explode('|', (string) $product['specs']))) as $i => $item): ?>
+              <li class="flex items-start gap-3 px-5 py-3.5 <?= $i % 2 ? 'bg-white' : 'bg-primary-50' ?>">
+                <span class="mt-0.5 shrink-0 text-primary-600"><?= icon('shield', 'h-4 w-4') ?></span>
+                <span class="text-sm font-medium text-gray-900"><?= e($item) ?></span>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        </div>
+      <?php elseif ($specs): ?>
         <div class="mt-12">
           <h2 class="text-2xl font-bold text-gray-900">Specifications</h2>
           <dl class="mt-5 overflow-hidden rounded-2xl border border-gray-900">
@@ -266,71 +324,11 @@ require __DIR__ . '/components/header.php';
     </div>
 
     <!-- RIGHT: sticky lead panel -->
-    <aside id="enquiry" class="scroll-mt-44 lg:sticky lg:top-44">
-      <div class="rounded-3xl border border-gray-900 bg-ink p-6 md:p-7">
-        <span class="inline-flex items-center rounded-full border border-accent-400 px-4 py-1.5 text-xs font-medium text-accent-400">
-       Get a Free Quote
-        </span>
-        <div class="mt-5">
-          <?php require __DIR__ . '/components/flash-message.php'; ?>
-        </div>
-
-        <form method="post" action="/product-details.php?id=<?= (int) $product['id'] ?>#enquiry" class="mt-2 space-y-4">
-          <?= csrf_field() ?>
-
-          <div>
-            <label for="lead-name" class="text-sm font-medium text-gray-400">Your Name <span class="text-red-400">*</span></label>
-            <input id="lead-name" type="text" name="name" required autocomplete="name" placeholder="e.g. Jason Samuel" class="input mt-1 bg-white py-2.5">
-          </div>
-
-          <div>
-            <label for="lead-phone" class="text-sm font-medium text-gray-400">Phone <span class="text-red-400">*</span></label>
-            <input id="lead-phone" type="tel" name="phone" required autocomplete="tel" inputmode="tel" placeholder="e.g. +91 98765 43210" class="input mt-1 bg-white py-2.5">
-          </div>
-
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label for="lead-email" class="text-sm font-medium text-gray-400">Email</label>
-              <input id="lead-email" type="email" name="email" autocomplete="email" placeholder="you@example.com" class="input mt-1 bg-white py-2.5">
-            </div>
-            <div>
-              <label for="lead-pincode" class="text-sm font-medium text-gray-400">PIN Code</label>
-              <input id="lead-pincode" type="text" name="pincode" inputmode="numeric" maxlength="6" placeholder="e.g. 226001" class="input mt-1 bg-white py-2.5">
-            </div>
-          </div>
-
-          <div>
-            <label for="lead-message" class="text-sm font-medium text-gray-400">Message</label>
-            <textarea id="lead-message" name="message" rows="3" placeholder="Roof size, monthly bill, or anything else we should know" class="input mt-1 bg-white"></textarea>
-          </div>
-
-          <button type="submit" class="w-full inline-flex items-center justify-between gap-2 rounded-lg bg-accent-500 py-1.5 pl-5 pr-1.5 font-semibold text-white hover:bg-accent-600">
-            Send Enquiry
-            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white text-accent-600"><?= icon('send', 'h-4 w-4') ?></span>
-          </button>
-        </form>
-
-        <div class="my-5 flex items-center gap-3 text-xs text-gray-400">
-          <span class="h-px flex-1 bg-white/20"></span>
-          or reach us directly
-          <span class="h-px flex-1 bg-white/20"></span>
-        </div>
-
-        <div class="grid gap-3 sm:grid-cols-2">
-          <a href="tel:<?= e($phoneNumber) ?>"
-             class="inline-flex items-center justify-center gap-2 rounded-lg border border-white/30 px-4 py-2.5 text-sm font-semibold text-white hover:border-accent-400 hover:text-accent-400 transition-colors">
-            <?= icon('phone', 'h-4 w-4') ?> Call Now
-          </a>
-          <a href="<?= e($waLink) ?>" target="_blank" rel="noopener noreferrer"
-             class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1eb355] transition-colors">
-            <?= icon('whatsapp', 'h-4 w-4') ?> WhatsApp
-          </a>
-        </div>
-
-        <p class="mt-4 text-center text-xs text-gray-400">
-          No spam. Your details are used only to prepare your quote.
-        </p>
-      </div>
+    <aside class="lg:sticky lg:top-44">
+      <?php
+      $leadAction = $detailUrl . '#enquiry';
+      require __DIR__ . '/components/lead-form.php';
+      ?>
     </aside>
 
   </div>
@@ -383,7 +381,7 @@ require __DIR__ . '/components/header.php';
     <div class="flex flex-wrap items-end justify-between gap-4 mb-10">
       <div>
         <h2 class="text-2xl font-bold text-gray-900">You May Also Like</h2>
-        <p class="mt-2 text-sm text-gray-600">Other products from our solar range.</p>
+        <p class="mt-2 text-sm text-gray-600"><?= $kit ? 'Other complete kits from our range.' : 'Other products from our solar range.' ?></p>
       </div>
       <a href="/products.php" class="btn-outline text-sm py-1">
         View All Products <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
@@ -391,18 +389,19 @@ require __DIR__ . '/components/header.php';
     </div>
     <div class="grid gap-8 md:grid-cols-3">
       <?php foreach ($related as $rel): ?>
-        <a href="/product-details.php?id=<?= (int) $rel['id'] ?>" class="card shimmer group overflow-hidden p-3 flex flex-col border border-gray-900 shadow-none bg-white hover:bg-primary-100 transition-colors">
+        <?php $relKit = $rel['_kit'] ?? null; ?>
+        <a href="<?= e(product_url($rel)) ?>" class="card shimmer group overflow-hidden p-3 flex flex-col border border-gray-900 shadow-none bg-white hover:bg-primary-100 transition-colors">
           <div class="relative h-52 rounded-2xl bg-gray-100 overflow-hidden">
             <img src="<?= $rel['image_path'] ? '/' . e($rel['image_path']) : 'https://placehold.co/400x160?text=' . urlencode($rel['name']) ?>" class="h-full w-full object-cover" alt="<?= e($rel['name']) ?>">
             <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 text-xs font-semibold text-primary-700 shadow-sm">
-              <?= e(ucfirst($rel['category'])) ?>
+              <?= e($relKit ? rtrim(rtrim(number_format((float) $relKit['system_kw'], 1), '0'), '.') . ' kW' : ucfirst($rel['category'])) ?>
             </span>
           </div>
           <div class="p-4 pb-2 flex flex-col flex-1">
             <h3 class="font-bold text-gray-900 text-lg leading-snug group-hover:text-primary-700 transition-colors"><?= e($rel['name']) ?></h3>
             <p class="mt-2 text-sm text-gray-600 flex-1"><?= e($rel['description']) ?></p>
             <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
-              <span class="text-xs font-medium text-gray-500"><?= e($rel['specs']) ?></span>
+              <span class="text-xs font-medium text-gray-500"><?= e($relKit ? inr((int) $rel['price']) : (string) $rel['specs']) ?></span>
               <span class="btn-outline text-sm py-1">
                 View
                 <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>

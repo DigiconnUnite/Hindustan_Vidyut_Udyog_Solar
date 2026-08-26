@@ -5,35 +5,25 @@ require_once __DIR__ . '/config/solar-calc.php';
 // The estimate itself is computed client-side (assets/js/solar-calc.js) so the
 // numbers move as the slider moves. This POST handler only captures the lead
 // once the visitor asks for a real quote against the figures they were shown.
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    csrf_verify();
+//
+// The hidden kW/bill fields are client-supplied, so clamp them to the range the
+// calculator can actually produce — system_kw is DECIMAL(5,2) and monthly_bill
+// is UNSIGNED, and an out-of-range POST would otherwise throw on insert.
+$kw = min(999.99, max(0.0, (float) ($_POST['system_kw'] ?? 0)));
+$bill = min(10000000, max(0, (int) ($_POST['monthly_bill'] ?? 0)));
 
-    $back = '/solar-calculator.php#quote';
-    $name = trim($_POST['name'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $pincode = trim($_POST['pincode'] ?? '');
-    $kw = (float) ($_POST['system_kw'] ?? 0);
-    $bill = (int) ($_POST['monthly_bill'] ?? 0);
-
-    if ($name === '' || $phone === '') {
-        flash('error', 'Name and phone are required.');
-        redirect($back);
-    }
-
-    $message = sprintf(
+lead_handle([
+    'source' => 'calculator',
+    'back' => '/solar-calculator.php#quote',
+    'prepend' => sprintf(
         "Calculator estimate\nMonthly bill: %s\nSuggested system: %s kW\nEstimated subsidy: %s",
         inr($bill),
         $kw,
         inr(solar_subsidy($kw))
-    );
-
-    db()->prepare('INSERT INTO leads (name, phone, email, address, message, source, system_kw, monthly_bill) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-        ->execute([$name, $phone, $email ?: null, $pincode !== '' ? 'PIN ' . $pincode : null, $message, 'calculator', $kw ?: null, $bill ?: null]);
-
-    flash('success', 'Thanks! Our team will call you with a detailed quote shortly.');
-    redirect($back);
-}
+    ),
+    'success' => 'Thanks! Our team will call you with a detailed quote shortly.',
+    'extra' => ['system_kw' => $kw ?: null, 'monthly_bill' => $bill ?: null],
+]);
 
 $tariff = (float) setting('default_tariff', '8.0');
 $financeRate = (float) setting('finance_rate', '9.5');
@@ -184,38 +174,22 @@ require __DIR__ . '/components/page-banner.php';
         </div>
       </div>
 
-      <!-- Lead capture -->
-      <div id="quote" class="card border border-gray-900 shadow-none scroll-mt-40">
-        <?php require __DIR__ . '/components/flash-message.php'; ?>
-        <h3 class="text-xl font-bold text-gray-900">Get this quoted properly</h3>
-        <p class="mt-1 text-sm text-gray-600">We'll survey your roof free of charge and confirm these numbers for your actual site.</p>
-        <form method="post" action="/solar-calculator.php#quote" class="mt-5 grid gap-4 sm:grid-cols-2">
-          <?= csrf_field() ?>
-          <input type="hidden" name="system_kw" id="lead-kw" value="<?= e((string) $initial['system_kw']) ?>">
-          <input type="hidden" name="monthly_bill" id="lead-bill" value="3000">
-          <div>
-            <label for="q-name" class="text-sm font-medium text-primary-700">Your name *</label>
-            <input type="text" id="q-name" name="name" required class="input mt-1">
-          </div>
-          <div>
-            <label for="q-phone" class="text-sm font-medium text-primary-700">Phone *</label>
-            <input type="tel" id="q-phone" name="phone" required pattern="[0-9+ ]{10,15}" class="input mt-1">
-          </div>
-          <div>
-            <label for="q-email" class="text-sm font-medium text-primary-700">Email</label>
-            <input type="email" id="q-email" name="email" class="input mt-1">
-          </div>
-          <div>
-            <label for="q-pin" class="text-sm font-medium text-primary-700">PIN code</label>
-            <input type="text" id="q-pin" name="pincode" inputmode="numeric" pattern="[0-9]{6}" class="input mt-1">
-          </div>
-          <div class="sm:col-span-2">
-            <button type="submit" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400">
-              Send me a detailed quote <span class="btn-icon"><?= icon('send', 'h-4 w-4') ?></span>
-            </button>
-          </div>
-        </form>
-      </div>
+      <!-- Lead capture. The hidden system_kw/monthly_bill inputs render as #lead-system_kw
+           and #lead-monthly_bill, which assets/js/solar-calc.js keeps in step with the slider. -->
+      <?php
+      $leadLight = true;
+      $leadEyebrow = '';
+      $leadTitle = 'Get this quoted properly';
+      $leadAnchor = 'quote';
+      $leadButton = 'Send me a detailed quote';
+      $leadMessagePlaceholder = 'Roof size, shading, or anything else we should know';
+      $leadAction = '/solar-calculator.php#quote';
+      $leadHidden = [
+          'system_kw' => ['id' => 'lead-kw', 'value' => (string) $initial['system_kw']],
+          'monthly_bill' => ['id' => 'lead-bill', 'value' => '3000'],
+      ];
+      require __DIR__ . '/components/lead-form.php';
+      ?>
     </div>
   </div>
 </section>

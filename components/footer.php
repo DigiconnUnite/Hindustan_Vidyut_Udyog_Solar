@@ -5,7 +5,7 @@ $footerLinks = [
     '/about.php' => 'About Us',
     '/services.php' => 'Services',
     '/products.php' => 'Products',
-    '/solar-kits.php' => 'Solar Kits',
+    '/products.php?category=kit' => 'Solar Kits',
     '/blog.php' => 'Blog',
     '/contact.php' => 'Support',
 ];
@@ -21,9 +21,9 @@ $footerResources = [
 // PM Surya Ghar subsidises grid-connected (on-grid) rooftop solar only — off-grid and
 // hybrid are sold by us but are NOT scheme-eligible, so the subsidy note is on-grid only.
 $footerSolarTypes = [
-    ['/products.php?category=panel', 'On-Grid Rooftop Solar', true],
-    ['/products.php?category=battery', 'Off-Grid Solar with Storage', false],
-    ['/products.php?category=inverter', 'Hybrid Solar Systems', false],
+    ['/products.php?category=kit&type=ongrid', 'On-Grid Rooftop Solar', true],
+    ['/products.php?category=kit&type=offgrid', 'Off-Grid Solar with Storage', false],
+    ['/products.php?category=kit&type=hybrid', 'Hybrid Solar Systems', false],
 ];
 // Payment marks. Drop the official SVG from each brand's media kit into
 // assets/images/payments/<file> and it renders automatically; until then the
@@ -45,8 +45,8 @@ $footerSocials = [
     'youtube' => setting('social_youtube', '#'),
 ];
 ?>
-<footer class="bg-ink text-gray-300 ">
-  <!-- Row 1: brand + subscribe -->
+<footer class="bg-ink  text-gray-300 ">
+  <div class="mx-auto">
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 px-6 py-6 border-b border-white/10">
     <a href="/index.php" class="flex items-center gap-3">
       <img src="/assets/images/hvul-logo.png" alt="" class="h-14 w-auto">
@@ -68,24 +68,7 @@ $footerSocials = [
       </div>
     <?php endif; ?>
 
-    <div id="subscribe" class="w-full md:w-auto md:max-w-sm scroll-mt-40">
-      <label for="footer-email" class="block text-sm font-medium text-white">Solar subsidy &amp; tariff updates</label>
-      <form method="post" action="/subscribe.php" class="mt-2 flex gap-2">
-        <?= csrf_field() ?>
-        <input type="hidden" name="back" value="<?= e(strtok($_SERVER['REQUEST_URI'], '?')) ?>">
-        <input type="email" id="footer-email" name="email" required placeholder="you@example.com"
-               class="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-gray-400 focus:border-accent-400 focus:outline-none focus:ring-1 focus:ring-accent-400">
-        <button type="submit" aria-label="Subscribe"
-                class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-500 text-ink hover:bg-accent-400">
-          <?= icon('send', 'h-4 w-4') ?>
-        </button>
-      </form>
-      <?php if ($subFlash = flash('subscribe_success')): ?>
-        <p class="mt-2 text-xs text-primary-100"><?= e($subFlash) ?></p>
-      <?php elseif ($subError = flash('subscribe_error')): ?>
-        <p class="mt-2 text-xs text-accent-400"><?= e($subError) ?></p>
-      <?php endif; ?>
-    </div>
+   
 
     <a href="/contact.php" class="inline-flex items-center gap-2 self-start rounded-lg bg-accent-500 py-1.5 pl-4 pr-1.5 text-sm font-semibold text-white hover:bg-accent-600">
       Get a Quote
@@ -96,11 +79,38 @@ $footerSocials = [
   <!-- Row 2: columns -->
   <div class="grid gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 px-6 py-10">
     <div>
-      <p class="font-semibold text-white leading-snug">
-        We don't wait for the future.<br>
-        At Hindustan Vidyut Udyog, we build it with<br>
-        clean, intelligent energy.
+      <h4 class=" font-bold text-white">Solar, handled end to end</h4>
+      <p class="mt-3 text-sm leading-relaxed text-gray-400">
+        We design, install and maintain rooftop solar across Gurgaon, Delhi NCR and Faridabad.
+        Design, installation, DISCOM approval and PM Surya Ghar subsidy paperwork all stay with
+        one in-house team, so there is never a vendor to chase. Most households cut their bill
+        by 70–90% and see the system pay for itself in four to six years.
       </p>
+    </div>
+
+    <div>
+      <h4 class="font-semibold text-accent-400 mb-4">Solar Systems</h4>
+      <ul class="space-y-3 text-sm">
+        <?php foreach ($footerSolarTypes as [$href, $label, $subsidised]): ?>
+          <li>
+            <a href="<?= e($href) ?>" class="text-gray-300 hover:text-white">
+              <?= e($label) ?>
+            </a>
+            <?php if ($subsidised): ?>
+              <span
+                class="ml-1.5 align-middle rounded bg-accent-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-accent-400">Subsidy</span>
+            <?php endif; ?>
+          </li>
+        <?php endforeach; ?>
+        <li class="pt-1">
+          <a href="/pm-surya-ghar.php"
+            class="inline-flex items-center gap-1.5 font-medium text-accent-400 hover:text-accent-500">
+            PM Surya Ghar Subsidy
+            <?= icon('arrow-right', 'h-3.5 w-3.5') ?>
+          </a>
+        </li>
+      </ul>
+      <p class="mt-3 text-xs text-gray-500 leading-relaxed">Subsidy applies to grid-connected rooftop systems only.</p>
     </div>
 
     <div>
@@ -112,26 +122,7 @@ $footerSocials = [
       </ul>
     </div>
 
-    <div>
-      <h4 class="font-semibold text-accent-400 mb-4">Solar Systems</h4>
-      <ul class="space-y-3 text-sm">
-        <?php foreach ($footerSolarTypes as [$href, $label, $subsidised]): ?>
-          <li>
-            <a href="<?= e($href) ?>" class="text-gray-300 hover:text-white"><?= e($label) ?></a>
-            <?php if ($subsidised): ?>
-              <span class="ml-1.5 align-middle rounded bg-accent-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-accent-400">Subsidy</span>
-            <?php endif; ?>
-          </li>
-        <?php endforeach; ?>
-        <li class="pt-1">
-          <a href="/pm-surya-ghar.php" class="inline-flex items-center gap-1.5 font-medium text-accent-400 hover:text-accent-500">
-            PM Surya Ghar Subsidy
-            <?= icon('arrow-right', 'h-3.5 w-3.5') ?>
-          </a>
-        </li>
-      </ul>
-      <p class="mt-3 text-xs text-gray-500 leading-relaxed">Subsidy applies to grid-connected rooftop systems only.</p>
-    </div>
+    
 
     <div>
       <h4 class="font-semibold text-accent-400 mb-4">Resources</h4>
@@ -195,6 +186,7 @@ $footerSocials = [
       <a href="/faq.php" class="hover:text-white">FAQ</a>
       <a href="/admin/login.php" class="hover:text-white">Staff Login</a>
     </nav>
+  </div>
   </div>
 </footer>
 

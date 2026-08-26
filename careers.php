@@ -1,34 +1,23 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
 
+$jobs = db()->query('SELECT * FROM job_openings WHERE is_active = 1 ORDER BY sort_order')->fetchAll();
+
 // Applications land in leads with source='career' so the existing admin inbox
 // picks them up — a separate applicants table isn't worth it at this volume.
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    csrf_verify();
+//
+// The posted role is matched against the live openings rather than trusted, so an
+// arbitrary string cannot be written into the lead.
+$roleTitles = array_column($jobs, 'title');
+$postedRole = trim($_POST['role'] ?? '');
+$role = in_array($postedRole, $roleTitles, true) ? $postedRole : 'Any open role';
 
-    $back = '/careers.php#apply';
-    $name = trim($_POST['name'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $role = trim($_POST['role'] ?? '');
-    $note = trim($_POST['message'] ?? '');
-
-    if ($name === '' || $phone === '') {
-        flash('error', 'Name and phone are required.');
-        redirect($back);
-    }
-
-    $message = 'Application for: ' . ($role !== '' ? $role : 'Any open role')
-        . ($note !== '' ? "\n\n" . $note : '');
-
-    db()->prepare('INSERT INTO leads (name, phone, email, message, source) VALUES (?, ?, ?, ?, ?)')
-        ->execute([$name, $phone, $email ?: null, $message, 'career']);
-
-    flash('success', 'Thanks for applying. If your profile fits, our team will be in touch.');
-    redirect($back);
-}
-
-$jobs = db()->query('SELECT * FROM job_openings WHERE is_active = 1 ORDER BY sort_order')->fetchAll();
+lead_handle([
+    'source' => 'career',
+    'back' => '/careers.php#apply',
+    'prepend' => 'Application for: ' . $role,
+    'success' => 'Thanks for applying. If your profile fits, our team will be in touch.',
+]);
 
 $pageTitle = 'Careers — Join Our Solar Team in Gurgaon | HVU Solar';
 $metaDescription = 'Open roles at Hindustan Vidyut Udyog Solar — installation technicians, survey engineers, sales and subsidy coordinators in Gurgaon, Haryana.';
@@ -124,43 +113,24 @@ require __DIR__ . '/components/page-banner.php';
 
 <section id="apply" class="bg-primary-50 py-16 scroll-mt-40">
   <div class="mx-auto container px-6">
-    <div class="mx-auto max-w-2xl card border border-gray-900 shadow-none">
-      <?php require __DIR__ . '/components/flash-message.php'; ?>
-      <h2 class="text-2xl font-bold text-gray-900">Apply</h2>
-      <p class="mt-1 text-sm text-gray-600">Tell us which role and a little about yourself. We read every application.</p>
-      <form method="post" action="/careers.php#apply" class="mt-6 grid gap-4 sm:grid-cols-2">
-        <?= csrf_field() ?>
-        <div>
-          <label for="c-name" class="text-sm font-medium text-primary-700">Your name *</label>
-          <input type="text" id="c-name" name="name" required class="input mt-1">
-        </div>
-        <div>
-          <label for="c-phone" class="text-sm font-medium text-primary-700">Phone *</label>
-          <input type="tel" id="c-phone" name="phone" required pattern="[0-9+ ]{10,15}" class="input mt-1">
-        </div>
-        <div>
-          <label for="c-email" class="text-sm font-medium text-primary-700">Email</label>
-          <input type="email" id="c-email" name="email" class="input mt-1">
-        </div>
-        <div>
-          <label for="c-role" class="text-sm font-medium text-primary-700">Role</label>
-          <select id="c-role" name="role" class="input mt-1">
-            <option value="">Any open role</option>
-            <?php foreach ($jobs as $j): ?>
-              <option value="<?= e($j['title']) ?>"><?= e($j['title']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="sm:col-span-2">
-          <label for="c-message" class="text-sm font-medium text-primary-700">About you</label>
-          <textarea id="c-message" name="message" rows="4" placeholder="Experience, qualifications, when you can start..." class="input mt-1"></textarea>
-        </div>
-        <div class="sm:col-span-2">
-          <button type="submit" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400">
-            Submit application <span class="btn-icon"><?= icon('send', 'h-4 w-4') ?></span>
-          </button>
-        </div>
-      </form>
+    <div class="mx-auto max-w-2xl">
+      <?php
+      $leadLight = true;
+      $leadEyebrow = '';
+      $leadTitle = 'Apply';
+      $leadAnchor = 'apply-form';
+      $leadButton = 'Submit application';
+      $leadMessageLabel = 'About you';
+      $leadMessagePlaceholder = 'Experience, qualifications, when you can start...';
+      $leadNote = 'We read every application. Your details are used only for hiring.';
+      $leadAction = '/careers.php#apply';
+      $leadRole = [
+          'name' => 'role',
+          'label' => 'Role',
+          'options' => ['' => 'Any open role'] + array_combine($roleTitles, $roleTitles),
+      ];
+      require __DIR__ . '/components/lead-form.php';
+      ?>
       <p class="mt-4 text-xs text-gray-500">
         Prefer email? Send your CV to
         <a href="mailto:<?= e(setting('company_email', 'info@hvusolar.com')) ?>" class="font-medium text-primary-700 hover:text-primary-600"><?= e(setting('company_email', 'info@hvusolar.com')) ?></a>.
@@ -173,7 +143,7 @@ require __DIR__ . '/components/page-banner.php';
 // Clicking "Apply for this role" preselects that role in the form below.
 document.querySelectorAll('.apply-link').forEach(function (link) {
   link.addEventListener('click', function () {
-    var select = document.getElementById('c-role');
+    var select = document.getElementById('lead-role');
     if (select) select.value = link.dataset.role;
   });
 });

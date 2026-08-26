@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/config/solar-calc.php';
-consultation_handle();
+lead_handle(['source' => 'contact']);
 
 $tariff = (float) setting('default_tariff', '8.0');
 

@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
-consultation_handle();
 $pageTitle = 'Consumer Login — Track Your Solar Application | HVU Solar';
 $metaDescription = 'Consumer portal for HVU Solar customers. Subsidy applications are tracked through the national PM Surya Ghar portal; our team handles the paperwork on your behalf.';
 $bannerTitle = 'Consumer Login';

@@ -1,14 +1,26 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/config/solar-calc.php';
-consultation_handle();
+require_once __DIR__ . '/config/product-content.php';
 
-$products = db()->query('SELECT * FROM products WHERE is_active = 1 ORDER BY sort_order')->fetchAll();
-$categories = array_unique(array_column($products, 'category'));
+// Kits live in their own table but are browsed as products — normalise them into the
+// product row shape and they render through the same card, filters and sort.
+$kits = array_map('kit_as_product', db()->query('SELECT * FROM solar_kits WHERE is_active = 1 ORDER BY sort_order')->fetchAll());
+$catalogue = db()->query('SELECT * FROM products WHERE is_active = 1 ORDER BY sort_order')->fetchAll();
+
+// Kits lead: a complete system is what most homeowners are actually shopping for.
+$products = array_merge($kits, $catalogue);
+$categories = array_values(array_unique(array_column($products, 'category')));
 $brands = array_values(array_filter(array_unique(array_column($products, 'brand'))));
 
-$pageTitle = 'Solar Panels, Inverters & Batteries — Prices & Specs | HVU Solar';
-$metaDescription = 'Compare solar panels, inverters and battery storage with prices, wattage, warranty and specifications. ALMM-listed modules, installed across Delhi NCR.';
+$rate = (float) setting('finance_rate', '9.5');
+$tariff = (float) setting('default_tariff', '8.0');
+$kitTypes = ['ongrid' => 'On-Grid', 'hybrid' => 'Hybrid', 'offgrid' => 'Off-Grid'];
+// 'Kit' reads oddly next to Panel/Inverter/Battery; the data-category stays 'kit'.
+$categoryLabels = ['kit' => 'Complete Kits'];
+
+$pageTitle = 'Solar Kits, Panels, Inverters & Batteries — Prices & Specs | HVU Solar';
+$metaDescription = 'Complete rooftop solar kits with the PM Surya Ghar subsidy applied, plus panels, inverters and battery storage with prices, wattage and specifications. Installed across Delhi NCR.';
 
 $jsonLd = [[
     '@context' => 'https://schema.org',
@@ -26,7 +38,7 @@ $jsonLd = [[
                 'price' => (string) (int) $p['price'],
                 'priceCurrency' => 'INR',
                 'availability' => $p['in_stock'] ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-                'url' => APP_URL . '/product-details.php?id=' . $p['id'],
+                'url' => APP_URL . product_url($p),
             ] : null,
             'aggregateRating' => $p['rating'] && $p['review_count'] ? [
                 '@type' => 'AggregateRating',
@@ -38,7 +50,7 @@ $jsonLd = [[
 ]];
 
 $bannerTitle = 'Products';
-$bannerSubtitle = 'Panels, inverters and battery storage for every home.';
+$bannerSubtitle = 'Complete solar kits, panels, inverters and battery storage for every home.';
 require __DIR__ . '/components/header.php';
 require __DIR__ . '/components/page-banner.php';
 ?>
@@ -51,12 +63,23 @@ require __DIR__ . '/components/page-banner.php';
       <button class="filter-btn badge px-5 py-2 font-semibold transition-colors bg-accent-500 text-ink" data-category="all">All</button>
       <?php foreach ($categories as $category): ?>
         <button class="filter-btn badge px-5 py-2 font-semibold transition-colors text-gray-600 hover:text-gray-900" data-category="<?= e($category) ?>">
-          <?= e(ucfirst($category)) ?>
+          <?= e($categoryLabels[$category] ?? ucfirst($category)) ?>
         </button>
       <?php endforeach; ?>
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
+      <?php if ($kits): ?>
+        <?php // Only meaningful while kits are on screen; the JS shows/hides it with the category. ?>
+        <label for="type-filter" class="sr-only">Kit type</label>
+        <select id="type-filter" class="input w-auto py-2 hidden">
+          <option value="all">All kit types</option>
+          <?php foreach ($kitTypes as $slug => $label): ?>
+            <option value="<?= e($slug) ?>"><?= e($label) ?></option>
+          <?php endforeach; ?>
+        </select>
+      <?php endif; ?>
+
       <?php if ($brands): ?>
         <label for="brand-filter" class="sr-only">Brand</label>
         <select id="brand-filter" class="input w-auto py-2">
@@ -82,26 +105,38 @@ require __DIR__ . '/components/page-banner.php';
 
   <div class="mt-6 grid gap-8 md:grid-cols-2 lg:grid-cols-3" id="product-grid">
     <?php foreach ($products as $product):
+        $kit = $product['_kit'] ?? null;
+        $detailUrl = product_url($product);
         $discount = ($product['mrp'] && $product['price'] && $product['mrp'] > $product['price'])
             ? (int) round(100 - ($product['price'] / $product['mrp'] * 100))
             : 0;
+        $kw = $kit ? rtrim(rtrim(number_format((float) $kit['system_kw'], 1), '0'), '.') : '';
+        $kitEmi = $kit ? solar_emi((int) $product['price'], $rate, 60) : 0;
+        $kitYears = $kit ? solar_payback_years((int) $product['price'], (int) $kit['monthly_units'] * 12 * $tariff) : null;
     ?>
-      <article class="product-card card group overflow-hidden p-3 flex flex-col border border-gray-900 shadow-none hover:bg-primary-50 transition-colors"
+      <article class="product-card card group overflow-hidden p-3 flex flex-col border border-gray-900 shadow-none hover:bg-primary-50 transition-colors <?= $kit && $kit['is_featured'] ? 'ring-2 ring-accent-500' : '' ?>"
                data-category="<?= e($product['category']) ?>"
                data-brand="<?= e((string) $product['brand']) ?>"
                data-price="<?= (int) $product['price'] ?>"
                data-rating="<?= e((string) ($product['rating'] ?? 0)) ?>"
+               data-type="<?= e($kit ? $kit['kit_type'] : '') ?>"
                data-name="<?= e($product['name']) ?>">
-        <a href="/product-details.php?id=<?= (int) $product['id'] ?>" class="relative h-52 rounded-2xl bg-gray-100 overflow-hidden block">
-          <img src="<?= $product['image_path'] ? '/' . e($product['image_path']) : 'https://placehold.co/400x160?text=' . urlencode($product['name']) ?>"
+        <a href="<?= e($detailUrl) ?>" class="relative h-52 rounded-2xl bg-gray-100 overflow-hidden block">
+          <img src="<?= $product['image_path'] ? '/' . e($product['image_path']) : 'https://placehold.co/400x160?text=' . urlencode($kit ? $kw . ' kW Kit' : $product['name']) ?>"
                loading="lazy" class="h-full w-full object-cover" alt="<?= e($product['name']) ?>">
           <span class="absolute top-3 left-3 badge bg-white/95 backdrop-blur font-semibold text-primary-700 shadow-sm">
-            <?= e(ucfirst($product['category'])) ?>
+            <?= e($kit ? $kw . ' kW' : ucfirst($product['category'])) ?>
           </span>
-          <?php if ($discount > 0): ?>
+          <?php if ($kit): ?>
+            <span class="absolute top-3 right-3 badge bg-ink/85 backdrop-blur font-medium text-white">
+              <?= e($kitTypes[$kit['kit_type']] ?? $kit['kit_type']) ?>
+            </span>
+          <?php elseif ($discount > 0): ?>
             <span class="absolute top-3 right-3 badge bg-accent-500 font-bold text-ink shadow-sm"><?= $discount ?>% off</span>
           <?php endif; ?>
-          <?php if (!$product['in_stock']): ?>
+          <?php if ($kit && $kit['is_featured']): ?>
+            <span class="absolute bottom-3 left-3 badge bg-accent-500 font-bold text-ink shadow-sm">Most popular</span>
+          <?php elseif (!$kit && !$product['in_stock']): ?>
             <span class="absolute bottom-3 left-3 badge bg-ink/85 backdrop-blur font-medium text-white">Out of stock</span>
           <?php endif; ?>
         </a>
@@ -112,7 +147,7 @@ require __DIR__ . '/components/page-banner.php';
           <?php endif; ?>
 
           <h3 class="mt-1 font-bold text-gray-900 text-lg leading-snug group-hover:text-primary-700 transition-colors">
-            <a href="/product-details.php?id=<?= (int) $product['id'] ?>"><?= e($product['name']) ?></a>
+            <a href="<?= e($detailUrl) ?>"><?= e($product['name']) ?></a>
           </h3>
 
           <?php if ($product['rating']): ?>
@@ -132,25 +167,45 @@ require __DIR__ . '/components/page-banner.php';
                 <span class="text-sm text-gray-400 line-through"><?= e(inr((int) $product['mrp'])) ?></span>
               <?php endif; ?>
             </p>
+            <?php if ($kit): ?>
+              <p class="mt-1 text-xs text-gray-500">
+                <?php if ($kit['subsidy'] > 0): ?>
+                  after <?= e(inr((int) $kit['subsidy'])) ?> subsidy ·
+                <?php else: ?>
+                  Subsidy not applicable ·
+                <?php endif; ?>
+                <span class="font-semibold text-gray-900"><?= e(inr($kitEmi)) ?>/mo</span> for 60 months
+              </p>
+            <?php endif; ?>
           <?php endif; ?>
 
           <!-- Key specs at a glance -->
           <dl class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs">
-            <?php if ($product['wattage']): ?>
-              <div><dt class="text-gray-500">Rating</dt><dd class="font-semibold text-gray-900"><?= number_format((int) $product['wattage']) ?>W</dd></div>
-            <?php endif; ?>
-            <?php if ($product['warranty_years']): ?>
-              <div><dt class="text-gray-500">Warranty</dt><dd class="font-semibold text-gray-900"><?= (int) $product['warranty_years'] ?> years</dd></div>
+            <?php if ($kit): ?>
+              <div><dt class="text-gray-500">Generates</dt><dd class="font-semibold text-gray-900">~<?= number_format((int) $kit['monthly_units']) ?> units/mo</dd></div>
+              <div><dt class="text-gray-500">Pays back in</dt><dd class="font-semibold text-gray-900"><?= $kitYears === null ? '—' : e($kitYears . ' yrs') ?></dd></div>
+            <?php else: ?>
+              <?php if ($product['wattage']): ?>
+                <div><dt class="text-gray-500">Rating</dt><dd class="font-semibold text-gray-900"><?= number_format((int) $product['wattage']) ?>W</dd></div>
+              <?php endif; ?>
+              <?php if ($product['warranty_years']): ?>
+                <div><dt class="text-gray-500">Warranty</dt><dd class="font-semibold text-gray-900"><?= (int) $product['warranty_years'] ?> years</dd></div>
+              <?php endif; ?>
             <?php endif; ?>
           </dl>
 
           <div class="mt-5 flex items-center justify-between gap-3 border-t border-gray-100 pt-4">
-            <label class="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-gray-600">
-              <input type="checkbox" class="compare-box rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                     value="<?= (int) $product['id'] ?>" data-name="<?= e($product['name']) ?>">
-              Compare
-            </label>
-            <a href="/product-details.php?id=<?= (int) $product['id'] ?>" class="btn-outline text-sm py-1">
+            <?php // compare.php looks rows up by integer product id, so kits sit this one out. ?>
+            <?php if (!$kit): ?>
+              <label class="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-gray-600">
+                <input type="checkbox" class="compare-box rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                       value="<?= (int) $product['id'] ?>" data-name="<?= e($product['name']) ?>">
+                Compare
+              </label>
+            <?php else: ?>
+              <span class="text-xs font-medium text-gray-500">Complete system</span>
+            <?php endif; ?>
+            <a href="<?= e($detailUrl) ?>" class="btn-outline text-sm py-1">
               Details <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
             </a>
           </div>
@@ -181,6 +236,7 @@ require __DIR__ . '/components/page-banner.php';
   var grid = document.getElementById('product-grid');
   var cards = Array.prototype.slice.call(grid.querySelectorAll('.product-card'));
   var brandSel = document.getElementById('brand-filter');
+  var typeSel = document.getElementById('type-filter');
   var sortSel = document.getElementById('sort-by');
   var count = document.getElementById('result-count');
   var empty = document.getElementById('empty-state');
@@ -188,16 +244,25 @@ require __DIR__ . '/components/page-banner.php';
 
   function apply() {
     var brand = brandSel ? brandSel.value : 'all';
+    // Kit type only narrows kits, and only while the kit category is in view.
+    var showTypes = category === 'kit';
+    if (typeSel) {
+      typeSel.classList.toggle('hidden', !showTypes);
+      if (!showTypes) typeSel.value = 'all';
+    }
+    var type = (typeSel && showTypes) ? typeSel.value : 'all';
     var visible = 0;
 
     cards.forEach(function (card) {
       var ok = (category === 'all' || card.dataset.category === category)
-            && (brand === 'all' || card.dataset.brand === brand);
+            && (brand === 'all' || card.dataset.brand === brand)
+            && (type === 'all' || card.dataset.type === type);
       card.style.display = ok ? '' : 'none';
       if (ok) visible++;
     });
 
-    count.textContent = visible + (visible === 1 ? ' product' : ' products');
+    var noun = category === 'kit' ? ' kit' : ' product';
+    count.textContent = visible + noun + (visible === 1 ? '' : 's');
     empty.classList.toggle('hidden', visible > 0);
 
     sort();
@@ -233,11 +298,13 @@ require __DIR__ . '/components/page-banner.php';
   });
 
   if (brandSel) brandSel.addEventListener('change', apply);
+  if (typeSel) typeSel.addEventListener('change', apply);
   sortSel.addEventListener('change', apply);
 
   document.getElementById('reset-filters').addEventListener('click', function () {
     category = 'all';
     if (brandSel) brandSel.value = 'all';
+    if (typeSel) typeSel.value = 'all';
     sortSel.value = 'default';
     document.querySelector('.filter-btn[data-category="all"]').click();
   });
@@ -279,9 +346,15 @@ require __DIR__ . '/components/page-banner.php';
     refreshTray();
   });
 
-  // Deep link: /products.php?category=panel — falls back to "all" for unknown values.
-  var wanted = new URLSearchParams(location.search).get('category');
+  // Deep link: /products.php?category=kit&type=hybrid — unknown values fall back to "all".
+  var params = new URLSearchParams(location.search);
+  var wanted = params.get('category');
+  var wantedType = params.get('type');
   var target = wanted && document.querySelector('.filter-btn[data-category="' + CSS.escape(wanted) + '"]');
+  // Set the type before the click, since clicking runs apply() immediately.
+  if (typeSel && wantedType && typeSel.querySelector('option[value="' + CSS.escape(wantedType) + '"]')) {
+    typeSel.value = wantedType;
+  }
   if (target) target.click(); else apply();
 })();
 </script>

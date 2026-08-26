@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
-consultation_handle();
+lead_handle(['source' => 'contact']);
 $pageTitle = 'Solar FAQ — Subsidy, Cost, Warranty & Net Metering | HVU Solar';
 $metaDescription = 'Answers to the questions homeowners ask before going solar: what it costs, how the PM Surya Ghar subsidy works, how long it lasts and what we warrant.';
 $bannerTitle = 'Frequently Asked Questions';

@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
 
-consultation_handle();
+lead_handle(['source' => 'contact']);
 require_once __DIR__ . '/config/solar-calc.php';
 
 $pageTitle = 'Rooftop Solar Installation in Gurgaon & Delhi NCR | HVU Solar';
@@ -55,12 +55,29 @@ require __DIR__ . '/components/header.php';
 ?>
 
 <?php $heroSlides = ['/assets/images/hero-image-1.png', '/assets/images/hero-image-2.png', '/assets/images/hero-image-3.png']; ?>
+
 <section id="hero" class="relative overflow-hidden">
-  <?php foreach ($heroSlides as $i => $slide): ?>
-    <?php // first slide sits in flow and sets the section height; the rest overlay it ?>
-    <img data-hero-slide src="<?= e($slide) ?>" alt=""
-         class="w-full h-auto transition-opacity duration-1000 <?= $i ? 'absolute inset-0 opacity-0' : 'block' ?>">
-  <?php endforeach; ?>
+  <?php // Full-bleed slides behind a fixed-width card floated over their right side.
+        // Below lg the card leaves the overlay and stacks under the image, so it never
+        // covers the artwork on a phone. ?>
+  <div class="relative h-[280px] sm:h-[380px] lg:h-[640px] xl:h-[720px]">
+    <?php foreach ($heroSlides as $i => $slide): ?>
+      <img data-hero-slide src="<?= e($slide) ?>" alt=""
+           class="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 <?= $i ? 'opacity-0' : '' ?>">
+    <?php endforeach; ?>
+
+    <?php // Keeps the card legible over whichever slide is showing. ?>
+    <div class="pointer-events-none absolute inset-0 hidden lg:block bg-gradient-to-l from-black/65 via-black/20 to-transparent"
+         role="presentation"></div>
+  </div>
+
+  <div class="static lg:absolute lg:inset-0">
+    <div class="container mx-auto flex h-full items-center justify-end px-6">
+      <div class="w-full py-8 lg:w-[420px] lg:shrink-0 lg:py-0">
+        <?php $ctaBare = true; require __DIR__ . '/components/consultation-cta.php'; ?>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section class="mx-auto container px-6 pt-10">
@@ -231,7 +248,7 @@ require __DIR__ . '/components/header.php';
       <h2 class="text-3xl font-bold text-gray-900">Complete Solar Kits</h2>
       <p class="mt-3 text-gray-600">Panels, inverter, structure, cabling and paperwork in one price. Subsidy already applied.</p>
     </div>
-    <a href="/solar-kits.php" class="btn-outline">
+    <a href="/products.php?category=kit" class="btn-outline">
       All kits <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
     </a>
   </div>
@@ -240,7 +257,7 @@ require __DIR__ . '/components/header.php';
     <?php foreach ($homeKits as $kit):
         $kitNet = (int) ($kit['price'] - $kit['subsidy']);
     ?>
-      <a href="/solar-kits.php#<?= e($kit['slug']) ?>"
+      <a href="/product-details.php?kit=<?= e(rawurlencode($kit['slug'])) ?>"
          class="card group flex flex-col border border-gray-900 shadow-none hover:bg-primary-50 transition-colors">
         <div class="flex items-start justify-between gap-3">
           <h3 class="text-xl font-bold text-gray-900 group-hover:text-primary-700"><?= e($kit['name']) ?></h3>
@@ -260,41 +277,6 @@ require __DIR__ . '/components/header.php';
         </span>
       </a>
     <?php endforeach; ?>
-  </div>
-</section>
-
-<!-- Calculator strip -->
-<section class="mx-3 my-3 overflow-hidden rounded-3xl bg-ink">
-  <div class="mx-auto container grid gap-8 px-6 py-16 md:grid-cols-2 md:items-center">
-    <div>
-      <span class="inline-flex rounded-full border border-accent-400/50 px-4 py-1.5 text-sm font-medium text-accent-400">
-        Free tool
-      </span>
-      <h2 class="mt-5 text-3xl md:text-4xl font-extrabold text-white leading-tight">
-        What would solar save you?
-      </h2>
-      <p class="mt-4 max-w-md text-gray-300">
-        Enter your monthly electricity bill and see your system size, the PM Surya Ghar subsidy
-        you qualify for, your monthly saving and how fast it pays for itself.
-      </p>
-      <a href="/solar-calculator.php" class="btn-primary mt-7 bg-accent-500 text-ink hover:bg-accent-400">
-        Calculate my savings <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
-      </a>
-    </div>
-
-    <div class="grid grid-cols-2 gap-4">
-      <?php foreach ([
-          ['₹78,000', 'Maximum central subsidy'],
-          ['4–6 yrs', 'Typical payback period'],
-          ['70–90%', 'Bill reduction'],
-          ['25 yrs', 'Panel performance warranty'],
-      ] as [$stat, $label]): ?>
-        <div class="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10">
-          <p class="text-2xl font-extrabold text-accent-400"><?= e($stat) ?></p>
-          <p class="mt-1 text-sm text-gray-400"><?= e($label) ?></p>
-        </div>
-      <?php endforeach; ?>
-    </div>
   </div>
 </section>
 
@@ -375,7 +357,7 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
         Why Hindustan Vidyut Udyog
       </span>
       <h2 class="mt-5 text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
-        One team from site survey to your first zero-rupee bill
+        One team from site survey <br> to your first zero-rupee bill
       </h2>
       <p class="mt-4 text-gray-600 leading-relaxed">
         Most solar problems start where responsibility changes hands. We keep design, installation,
@@ -406,13 +388,6 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
   </div>
 </section>
 
-<?php
-$faqEyebrow = 'Questions, Answered';
-$faqTitle = 'Everything homeowners ask before going solar';
-$faqIntro = 'Costs, subsidy, timelines and what happens after installation. If yours is not here, ask us directly.';
-$faqFooter = '<a href="/faq.php" class="btn-outline">Read all FAQs <span class="btn-icon">' . icon('arrow-right', 'h-4 w-4') . '</span></a>';
-require __DIR__ . '/components/faq-section.php';
-?>
 
 <!-- Blog: plain section, now above the artwork band. -->
 <section class="mx-auto container px-6 py-20">
@@ -449,40 +424,6 @@ require __DIR__ . '/components/faq-section.php';
   </div>
 </section>
 
-<!-- Closing CTA over the artwork. The scene is bottom-anchored — houses and trees
-     along the bottom edge, open sky in the middle — so the copy sits centred in
-     that empty sky and the deep bottom padding keeps the houses clear of it. -->
-<section class="relative isolate overflow-hidden pt-20 pb-[clamp(9rem,28vw,24rem)]">
-  <div class="absolute inset-0 -z-10 bg-[url('/assets/images/bg/bottom-bg.png')] bg-[length:100%_auto] bg-bottom bg-no-repeat"
-       role="presentation"></div>
-
-  <!-- Fades the artwork's hard top edge into the page above it. -->
-  <div class="absolute inset-x-0 top-0 -z-10 h-32 bg-gradient-to-b from-white to-transparent"></div>
-
-  <div class="mx-auto container px-6">
-    <div class="mx-auto max-w-2xl text-center">
-      <span class="inline-flex rounded-full border border-gray-900 bg-white/70 px-4 py-1.5 text-sm font-medium text-primary-700 backdrop-blur">
-        Powered by the Sun, Built for You
-      </span>
-      <h2 class="mt-6 text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
-        Turn your rooftop into a power plant
-      </h2>
-      <p class="mt-4 text-gray-700">
-        Free site survey, PM Surya Ghar subsidy handled end to end, and a system sized to your
-        actual bill — not your roof size. Most homes cut their electricity bill by 70–90%.
-      </p>
-      <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
-        <a href="/contact.php" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400">
-          Book a Free Site Survey
-          <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
-        </a>
-        <a href="/solar-calculator.php" class="btn-outline bg-white/70 backdrop-blur">
-          Calculate My Savings
-          <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
+<?php require __DIR__ . '/components/closing-cta.php'; ?>
 
 <?php require __DIR__ . '/components/footer.php'; ?>

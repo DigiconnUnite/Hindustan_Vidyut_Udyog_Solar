@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
-consultation_handle();
+lead_handle(['source' => 'contact']);
 
 $certs = db()->query('SELECT * FROM certifications ORDER BY sort_order')->fetchAll();
 

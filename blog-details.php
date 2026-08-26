@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
-consultation_handle();
 
 $posts = require __DIR__ . '/data/blog-posts.php';
 $slug = $_GET['slug'] ?? '';

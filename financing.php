@@ -2,43 +2,28 @@
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/config/solar-calc.php';
 
-// Own POST handler — a finance enquiry carries the loan figures, so it does not
-// go through consultation_handle().
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    csrf_verify();
+$rate = (float) setting('finance_rate', '9.5');
+$maxMonths = (int) setting('finance_max_months', '84');
+$defaultAmount = 150000;
+$defaultMonths = 60;
 
-    $back = '/financing.php#apply';
-    $name = trim($_POST['name'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $amount = (int) ($_POST['amount'] ?? 0);
-    $months = (int) ($_POST['months'] ?? 0);
+// A finance enquiry carries the loan figures the visitor was shown. They come from hidden
+// inputs, so clamp before they reach solar_emi() — a zero tenure would divide by zero.
+$amount = min(10000000, max(10000, (int) ($_POST['amount'] ?? $defaultAmount)));
+$months = min($maxMonths, max(6, (int) ($_POST['months'] ?? $defaultMonths)));
 
-    if ($name === '' || $phone === '') {
-        flash('error', 'Name and phone are required.');
-        redirect($back);
-    }
-
-    $rate = (float) setting('finance_rate', '9.5');
-    $message = sprintf(
+lead_handle([
+    'source' => 'financing',
+    'back' => '/financing.php#apply',
+    'prepend' => sprintf(
         "Financing enquiry\nAmount: %s\nTenure: %d months\nIndicative EMI: %s at %s%% p.a.",
         inr($amount),
         $months,
         inr(solar_emi($amount, $rate, $months)),
         $rate
-    );
-
-    db()->prepare('INSERT INTO leads (name, phone, email, message, source) VALUES (?, ?, ?, ?, ?)')
-        ->execute([$name, $phone, $email ?: null, $message, 'financing']);
-
-    flash('success', 'Thanks! Our finance desk will call you to walk through the options.');
-    redirect($back);
-}
-
-$rate = (float) setting('finance_rate', '9.5');
-$maxMonths = (int) setting('finance_max_months', '84');
-$defaultAmount = 150000;
-$defaultMonths = 60;
+    ),
+    'success' => 'Thanks! Our finance desk will call you to walk through the options.',
+]);
 
 $pageTitle = 'Solar Loans & EMI — Finance Your Rooftop System | HVU Solar';
 $metaDescription = 'Finance your rooftop solar with EMIs from ₹' . number_format(solar_emi($defaultAmount, $rate, $defaultMonths)) . '/month. Collateral-free solar loans, PM Surya Ghar subsidy adjusted, tenures up to ' . $maxMonths . ' months.';
@@ -183,32 +168,24 @@ require __DIR__ . '/components/page-banner.php';
 <!-- Apply -->
 <section id="apply" class="bg-primary-50 py-16 scroll-mt-40">
   <div class="mx-auto container px-6">
-    <div class="mx-auto max-w-2xl card border border-gray-900 shadow-none">
-      <?php require __DIR__ . '/components/flash-message.php'; ?>
-      <h2 class="text-2xl font-bold text-gray-900">Talk to our finance desk</h2>
-      <p class="mt-1 text-sm text-gray-600">We'll match you to a lender and walk you through the paperwork. No obligation.</p>
-      <form method="post" action="/financing.php#apply" class="mt-6 grid gap-4 sm:grid-cols-2">
-        <?= csrf_field() ?>
-        <input type="hidden" name="amount" id="lead-amount" value="<?= $defaultAmount ?>">
-        <input type="hidden" name="months" id="lead-months" value="<?= $defaultMonths ?>">
-        <div>
-          <label for="f-name" class="text-sm font-medium text-primary-700">Your name *</label>
-          <input type="text" id="f-name" name="name" required class="input mt-1">
-        </div>
-        <div>
-          <label for="f-phone" class="text-sm font-medium text-primary-700">Phone *</label>
-          <input type="tel" id="f-phone" name="phone" required pattern="[0-9+ ]{10,15}" class="input mt-1">
-        </div>
-        <div class="sm:col-span-2">
-          <label for="f-email" class="text-sm font-medium text-primary-700">Email</label>
-          <input type="email" id="f-email" name="email" class="input mt-1">
-        </div>
-        <div class="sm:col-span-2">
-          <button type="submit" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400">
-            Request a callback <span class="btn-icon"><?= icon('send', 'h-4 w-4') ?></span>
-          </button>
-        </div>
-      </form>
+    <div class="mx-auto max-w-2xl">
+      <?php
+      // The hidden amount/months inputs keep their ids — the EMI slider script at the
+      // bottom of this page writes the shown figures into them before submit.
+      $leadLight = true;
+      $leadEyebrow = '';
+      $leadTitle = 'Talk to our finance desk';
+      $leadAnchor = 'apply-form';
+      $leadButton = 'Request a callback';
+      $leadMessageLabel = 'Anything we should know?';
+      $leadMessagePlaceholder = 'Existing loans, preferred lender, or questions about the paperwork';
+      $leadAction = '/financing.php#apply';
+      $leadHidden = [
+          'amount' => ['id' => 'lead-amount', 'value' => (string) $defaultAmount],
+          'months' => ['id' => 'lead-months', 'value' => (string) $defaultMonths],
+      ];
+      require __DIR__ . '/components/lead-form.php';
+      ?>
     </div>
   </div>
 </section>

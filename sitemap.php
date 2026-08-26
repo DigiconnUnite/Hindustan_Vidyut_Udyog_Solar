@@ -11,7 +11,6 @@ header('Content-Type: application/xml; charset=utf-8');
 $urls = [
     ['/', 'weekly', '1.0'],
     ['/solar-calculator.php', 'monthly', '0.9'],
-    ['/solar-kits.php', 'weekly', '0.9'],
     ['/products.php', 'weekly', '0.9'],
     ['/pm-surya-ghar.php', 'monthly', '0.9'],
     ['/financing.php', 'monthly', '0.8'],
@@ -28,10 +27,19 @@ $urls = [
     ['/privacy.php', 'yearly', '0.2'],
 ];
 
-// Products and blog posts are dynamic; a missing table shouldn't 500 the sitemap.
+// Products, kits and blog posts are dynamic; a missing table shouldn't 500 the sitemap.
 try {
     foreach (db()->query('SELECT id FROM products WHERE is_active = 1') as $row) {
         $urls[] = ['/product-details.php?id=' . $row['id'], 'monthly', '0.7'];
+    }
+} catch (Throwable) {
+    // table not migrated yet — skip
+}
+
+try {
+    // Kits carry real prices, so they rank above the individual components.
+    foreach (db()->query('SELECT slug FROM solar_kits WHERE is_active = 1') as $row) {
+        $urls[] = ['/product-details.php?kit=' . rawurlencode($row['slug']), 'monthly', '0.8'];
     }
 } catch (Throwable) {
     // table not migrated yet — skip

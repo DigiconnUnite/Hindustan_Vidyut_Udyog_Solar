@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
-consultation_handle();
+lead_handle(['source' => 'contact']);
 
 $projects = db()->query('SELECT * FROM projects WHERE is_active = 1 ORDER BY sort_order')->fetchAll();
 

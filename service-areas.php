@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
-consultation_handle();
+lead_handle(['source' => 'contact']);
 
 $areas = db()->query('SELECT * FROM service_areas ORDER BY sort_order')->fetchAll();
 

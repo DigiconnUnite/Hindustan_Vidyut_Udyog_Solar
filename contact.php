@@ -1,39 +1,35 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    csrf_verify();
+$prefillProduct = trim($_GET['product'] ?? '');
+$prefillSubject = trim($_GET['subject'] ?? '');
 
-    $name = trim($_POST['name'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $address = trim($_POST['address'] ?? '');
-    $subject = trim($_POST['subject'] ?? '');
-    $message = trim($_POST['message'] ?? '');
-
-    if ($name === '' || $phone === '') {
-        flash('error', 'Name and phone are required.');
-        redirect('/contact.php');
-    }
-
-    // no subject column on leads; keep it with the message so admin still sees it
-    if ($subject !== '') {
-        $message = "Subject: $subject\n\n$message";
-    }
-
-    $stmt = db()->prepare(
-        'INSERT INTO leads (name, phone, email, address, message) VALUES (?, ?, ?, ?, ?)'
-    );
-    $stmt->execute([$name, $phone, $email ?: null, $address ?: null, $message ?: null]);
-
-    flash('success', 'Thanks! We received your request and will contact you shortly.');
-    redirect('/contact.php');
+// Legacy kit links pass a slug; resolve it to the real name rather than trusting
+// (or echoing) the query string. An unknown slug simply names nothing.
+$prefillKit = trim($_GET['kit'] ?? '');
+if ($prefillProduct === '' && $prefillKit !== '') {
+    $kitStmt = db()->prepare('SELECT name FROM solar_kits WHERE slug = ? AND is_active = 1');
+    $kitStmt->execute([$prefillKit]);
+    $prefillProduct = (string) ($kitStmt->fetchColumn() ?: '');
 }
+
+// Carried into the lead's message, since leads has no subject/product column. Derived from
+// the query string rather than the POST body so it cannot be forged.
+$contactPrepend = '';
+if ($prefillProduct !== '') {
+    $contactPrepend = 'Interested in: ' . $prefillProduct;
+} elseif ($prefillSubject === 'pm-surya-ghar') {
+    $contactPrepend = 'Subject: PM Surya Ghar Subsidy';
+}
+
+lead_handle([
+    'source' => 'contact',
+    'back' => '/contact.php#enquiry',
+    'prepend' => $contactPrepend,
+]);
 
 $pageTitle = 'Contact Us — Free Solar Site Survey in Gurgaon | HVU Solar';
 $metaDescription = 'Book a free rooftop survey or raise a grievance. Call, WhatsApp or send us a message — our Gurgaon team responds the same working day.';
-$prefillProduct = trim($_GET['product'] ?? '');
-$prefillSubject = trim($_GET['subject'] ?? '');
 $bannerTitle = 'Support & Contact';
 $bannerSubtitle = 'Have a question or want a free quote? Reach out below.';
 
@@ -51,52 +47,17 @@ require __DIR__ . '/components/page-banner.php';
           to every enquiry, usually within one working day.
         </p>
 
-        <?php require __DIR__ . '/components/flash-message.php'; ?>
-
-        <form method="post" action="/contact.php" class="mt-8 space-y-5">
-          <?= csrf_field() ?>
-
-          <div class="grid gap-5 md:grid-cols-2">
-            <div>
-              <label for="name" class="text-sm font-medium text-primary-700">Your Name <span class="text-red-500">*</span></label>
-              <input id="name" type="text" name="name" required placeholder="e.g. Jason Samuel" class="input mt-1 bg-white py-2.5">
-            </div>
-            <div>
-              <label for="email" class="text-sm font-medium text-primary-700">Your Email</label>
-              <input id="email" type="email" name="email" placeholder="e.g. hola@dominantsite.com" class="input mt-1 bg-white py-2.5">
-            </div>
-            <div>
-              <label for="phone" class="text-sm font-medium text-primary-700">Phone <span class="text-red-500">*</span></label>
-              <input id="phone" type="tel" name="phone" required placeholder="e.g. +91 98765 43210" class="input mt-1 bg-white py-2.5">
-            </div>
-            <div>
-              <label for="subject" class="text-sm font-medium text-primary-700">Subject</label>
-              <input id="subject" type="text" name="subject" placeholder="e.g. Solar Installation" class="input mt-1 bg-white py-2.5"
-                     value="<?= e($prefillProduct ?: ($prefillSubject === 'pm-surya-ghar' ? 'PM Surya Ghar Subsidy' : '')) ?>">
-            </div>
-          </div>
-
-          <div>
-            <label for="address" class="text-sm font-medium text-primary-700">Installation Address</label>
-            <input id="address" type="text" name="address" placeholder="Where would the system be installed?" class="input mt-1 bg-white py-2.5">
-          </div>
-
-          <div>
-            <label for="message" class="text-sm font-medium text-primary-700">Message</label>
-            <textarea id="message" name="message" rows="5" placeholder="Write your message here..." class="input mt-1 bg-white"><?php
-              if ($prefillProduct) {
-                  echo e('Interested in: ' . $prefillProduct);
-              } elseif ($prefillSubject === 'pm-surya-ghar') {
-                  echo e('I would like to check my eligibility for the PM Surya Ghar subsidy.');
-              }
-            ?></textarea>
-          </div>
-
-          <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-accent-500 py-1.5 pl-5 pr-1.5 font-semibold text-white hover:bg-accent-600">
-            Send Message
-            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white text-accent-600"><?= icon('send', 'h-4 w-4') ?></span>
-          </button>
-        </form>
+        <div class="mt-8">
+          <?php
+          $leadLight = true;
+          $leadEyebrow = '';
+          $leadButton = 'Send Message';
+          $leadMessageLabel = 'Message';
+          $leadMessagePlaceholder = 'Roof size, monthly bill, installation address, or anything else we should know';
+          $leadAction = '/contact.php#enquiry';
+          require __DIR__ . '/components/lead-form.php';
+          ?>
+        </div>
       </div>
 
       <aside class="rounded-3xl h-full relative overflow-hidden bg-ink p-8 flex flex-col">
