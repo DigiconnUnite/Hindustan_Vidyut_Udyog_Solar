@@ -19,7 +19,7 @@ require __DIR__ . '/components/page-banner.php';
 
 <section class="mx-auto container px-6 py-16">
   <!-- Headline numbers -->
-  <div class="grid gap-6 sm:grid-cols-3 mb-14">
+  <!-- <div class="grid gap-6 sm:grid-cols-3 mb-14">
     <?php
     $stats = [
         [number_format($totalKw, 0) . ' kW', 'Installed capacity shown here', 'sun'],
@@ -33,7 +33,7 @@ require __DIR__ . '/components/page-banner.php';
         <p class="mt-1 text-sm text-gray-600"><?= e($label) ?></p>
       </div>
     <?php endforeach; ?>
-  </div>
+  </div> -->
 
   <!-- Segment filter -->
   <div class="flex flex-wrap gap-2 justify-center rounded-full bg-gray-100 border border-gray-900 p-1.5 w-fit mx-auto">

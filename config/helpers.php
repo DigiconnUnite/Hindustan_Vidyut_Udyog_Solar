@@ -134,9 +134,9 @@ function lead_handle(array $opts = []): void
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
     );
     $stmt->execute([
-        mb_substr($name, 0, 100),
-        mb_substr($phone, 0, 20),
-        $email !== '' ? mb_substr($email, 0, 150) : null,
+        substr($name, 0, 100),
+        substr($phone, 0, 20),
+        $email !== '' ? substr($email, 0, 150) : null,
         $address,
         $message !== '' ? $message : null,
         $opts['source'] ?? 'contact',

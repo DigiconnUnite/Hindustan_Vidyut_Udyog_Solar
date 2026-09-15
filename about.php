@@ -22,22 +22,55 @@ require __DIR__ . '/components/page-banner.php';
   </div>
 </section>
 
-<section class="bg-gray-50 py-16">
-  <div class="mx-auto container px-6">
-    <h2 class="text-2xl font-bold text-gray-900 text-center mb-10">Our Values</h2>
-    <div class="grid gap-6 md:grid-cols-4">
-      <?php foreach ([
-        ['Quality', 'Certified equipment and installation practices on every job.'],
-        ['Transparency', 'Clear pricing and honest timelines, no surprises.'],
-        ['Reliability', 'On-time installation and responsive support.'],
-        ['Sustainability', 'Helping every home reduce its carbon footprint.'],
-      ] as [$title, $desc]): ?>
-        <div class="card text-center">
-          <h3 class="font-semibold text-gray-900"><?= e($title) ?></h3>
-          <p class="mt-2 text-sm text-gray-600"><?= e($desc) ?></p>
+<section class="bg-gray-50 py-16 sm:py-20">
+  <div class="container mx-auto px-5 sm:px-6">
+
+    <!-- Section Heading -->
+    <div class="mx-auto mb-10 max-w-2xl text-center sm:mb-12">
+      <span class="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.18em] text-[#ff7a32]">
+        What We Stand For
+      </span>
+
+      <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+        Our Values
+      </h2>
+
+      <p class="mx-auto mt-3 max-w-xl text-sm leading-6 text-gray-600 sm:text-base">
+        The principles that guide how we work, deliver, and build lasting relationships with our customers.
+      </p>
+    </div>
+
+    <!-- Values -->
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <?php foreach (
+        [
+          ['01', 'Quality', 'Certified equipment and installation practices on every job.'],
+          ['02', 'Transparency', 'Clear pricing and honest timelines, no surprises.'],
+          ['03', 'Reliability', 'On-time installation and responsive support.'],
+          ['04', 'Sustainability', 'Helping every home reduce its carbon footprint.'],
+        ] as [$number, $title, $desc]
+      ): ?>
+
+        <div class="group rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm transition duration-300 hover:border-[#ff7a32]/40 hover:shadow-md">
+
+          <!-- Number -->
+          <div class="mx-auto mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-500 transition duration-300 group-hover:bg-[#ff7a32] group-hover:text-white">
+            <?= e($number) ?>
+          </div>
+
+          <h3 class="text-lg font-semibold text-gray-900">
+            <?= e($title) ?>
+          </h3>
+
+          <p class="mt-2 text-sm leading-6 text-gray-600">
+            <?= e($desc) ?>
+          </p>
+
         </div>
+
       <?php endforeach; ?>
     </div>
+
   </div>
 </section>
 

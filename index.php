@@ -326,7 +326,7 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
                       <?php if (!empty($t['photo'])): ?>
                         <img src="<?= e($t['photo']) ?>" alt="" class="h-full w-full object-cover">
                       <?php else: ?>
-                        <?= e(mb_substr($t['name'], 0, 1)) ?>
+                        <?= e(substr($t['name'], 0, 1)) ?>
                       <?php endif; ?>
                     </span>
                     <span>

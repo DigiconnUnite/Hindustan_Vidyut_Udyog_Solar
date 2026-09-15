@@ -399,7 +399,7 @@ require __DIR__ . '/components/faq-section.php';
 
 <?php require __DIR__ . '/components/consultation-cta.php'; ?>
 
-<section class="mx-auto container px-6 pb-16">
+<!-- <section class="mx-auto container px-6 pb-16">
   <p class="mx-auto max-w-2xl text-center text-xs leading-relaxed text-gray-500">
     Subsidy amounts, eligibility and process are set by the Government of India under PM Surya Ghar:
     Muft Bijli Yojana and may change without notice. Figures on this page reflect the scheme as
@@ -407,6 +407,6 @@ require __DIR__ . '/components/faq-section.php';
     HVU Solar assists with the application; final approval and disbursement rest with your DISCOM and
     the national portal. Always verify current terms on the official portal before committing.
   </p>
-</section>
+</section> -->
 
 <?php require __DIR__ . '/components/footer.php'; ?>
