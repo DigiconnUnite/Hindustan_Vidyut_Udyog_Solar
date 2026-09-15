@@ -9,7 +9,7 @@ $footerLinks = [
     '/blog.php' => 'Blog',
     '/contact.php' => 'Support',
 ];
-// Tools and proof — the pages that answer "should I?" rather than "what do you sell?"
+
 $footerResources = [
     '/solar-calculator.php' => 'Solar Calculator',
     '/financing.php' => 'Financing & EMI',
@@ -18,20 +18,13 @@ $footerResources = [
     '/service-areas.php' => 'Service Areas',
     '/careers.php' => 'Careers',
 ];
-// PM Surya Ghar subsidises grid-connected (on-grid) rooftop solar only — off-grid and
-// hybrid are sold by us but are NOT scheme-eligible, so the subsidy note is on-grid only.
+
 $footerSolarTypes = [
     ['/products.php?category=kit&type=ongrid', 'On-Grid Rooftop Solar', true],
     ['/products.php?category=kit&type=offgrid', 'Off-Grid Solar with Storage', false],
     ['/products.php?category=kit&type=hybrid', 'Hybrid Solar Systems', false],
 ];
-// Payment marks. Drop the official SVG from each brand's media kit into
-// assets/images/payments/<file> and it renders automatically; until then the
-// label shows as a text badge, so nothing looks broken while assets are pending.
-// Third value is an optical-size class: these SVGs have different canvases
-// (UPI 432x216, Visa/RuPay/NetBanking square) so a single height renders the
-// square ones small — their mark is padded inside an empty square. Sized per
-// logo so the marks look equal, not so the boxes are equal.
+
 $footerPayments = [
     ['upi.svg', 'UPI', 'h-10'],
     ['visa.svg', 'Visa', 'h-12'],
