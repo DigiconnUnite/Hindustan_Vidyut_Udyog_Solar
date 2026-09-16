@@ -12,6 +12,7 @@ $navItems = [
     '/admin/subscribers.php' => ['Subscribers', 'mail'],
 ];
 $currentScript = '/admin/' . basename($_SERVER['SCRIPT_NAME']);
+
 ?>
 <!doctype html>
 <html lang="en">
