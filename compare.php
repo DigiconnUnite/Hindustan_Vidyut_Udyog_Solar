@@ -126,7 +126,7 @@ require __DIR__ . '/components/page-banner.php';
           <td class="p-4"></td>
           <?php foreach ($products as $p): ?>
             <td class="p-4">
-              <a href="/product-details.php?id=<?= (int) $p['id'] ?>#enquiry" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400 text-sm">
+              <a href="/product-details.php?id=<?= (int) $p['id'] ?>#enquiry" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400 text-sm extra-padding">
                 Enquire <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
               </a>
             </td>

@@ -28,6 +28,8 @@ $subscribers = db()->query('SELECT * FROM newsletter_subscribers ORDER BY create
 require __DIR__ . '/../components/admin-header.php';
 ?>
 
+<h1 class="mb-6 text-2xl font-semibold text-gray-900"><?= e($pageTitle) ?></h1>
+
 <div class="flex items-center justify-between mb-6">
   <p class="text-sm text-gray-600"><?= count($subscribers) ?> subscriber<?= count($subscribers) === 1 ? '' : 's' ?></p>
   <?php if ($subscribers): ?>

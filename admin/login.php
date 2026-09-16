@@ -72,7 +72,7 @@ require_once __DIR__ . '/../components/icon.php';
         <label class="text-sm font-medium text-gray-700">Password</label>
         <input type="password" name="password" required class="input mt-1">
       </div>
-      <button type="submit" class="btn-primary w-full">Sign In</button>
+      <button type="submit" class="btn-primary w-full flex flex-1 items-center justify-center">Sign In</button>
     </form>
   </div>
 </body>

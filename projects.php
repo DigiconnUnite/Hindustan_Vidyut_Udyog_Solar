@@ -101,4 +101,6 @@ document.querySelectorAll('.proj-filter').forEach(function (btn) {
 });
 </script>
 
+<?php require __DIR__ . '/components/closing-cta.php'; ?>
+
 <?php require __DIR__ . '/components/footer.php'; ?>

@@ -12,7 +12,7 @@ $products = db()->query('SELECT * FROM products WHERE is_active = 1 ORDER BY sor
 // Featured kits for the homepage strip. Falls back to the first three by size so
 // the section never renders empty if nobody has ticked "featured" in admin.
 $homeKits = db()->query('SELECT * FROM solar_kits WHERE is_active = 1 AND is_featured = 1 ORDER BY sort_order LIMIT 3')->fetchAll()
-    ?: db()->query('SELECT * FROM solar_kits WHERE is_active = 1 ORDER BY sort_order LIMIT 3')->fetchAll();
+  ?: db()->query('SELECT * FROM solar_kits WHERE is_active = 1 ORDER BY sort_order LIMIT 3')->fetchAll();
 $posts = require __DIR__ . '/data/blog-posts.php';
 usort($posts, fn($a, $b) => strcmp($b['published_at'], $a['published_at']));
 $posts = array_slice($posts, 0, 3);
@@ -21,34 +21,50 @@ $testimonials = require __DIR__ . '/data/testimonials.php';
 // Homepage FAQ. Answers carry links, so they are rendered as raw HTML by
 // components/faq-section.php — keep this list authored here, never user input.
 $faqItems = [
-    ['How much does rooftop solar cost in Gurgaon?',
-     'A turnkey residential system runs roughly ₹60,000 per kW installed. A typical 3 kW home system is about ₹1,80,000 before subsidy and ₹1,02,000 after the full ₹78,000 PM Surya Ghar subsidy. <a href="/solar-calculator.php" class="font-semibold text-primary-700 hover:text-primary-600">Use the calculator</a> for a figure based on your own bill.'],
-    ['How much subsidy will I actually get?',
-     'Under PM Surya Ghar you get ₹30,000 per kW for the first 2 kW and ₹18,000 for the third, capped at ₹78,000. So 1 kW earns ₹30,000, 2 kW earns ₹60,000, and anything 3 kW or larger earns ₹78,000. It is paid straight into your bank account after commissioning. <a href="/pm-surya-ghar.php" class="font-semibold text-primary-700 hover:text-primary-600">Full scheme details</a>.'],
-    ['How much will my electricity bill drop?',
-     'Most households see a 70–90% reduction. Fixed charges and meter rent still apply, so bills rarely reach exactly zero. A correctly sized system typically pays for itself in four to six years and then runs for another twenty.'],
-    ['How long does installation take?',
-     'The physical installation is one to three days. The full process — application, DISCOM approval, installation, net meter and inspection — usually runs three to six weeks. We handle the paperwork at every stage.'],
-    ['Will solar work during a power cut?',
-     'A standard on-grid system shuts down during an outage for lineworker safety. If you need backup, a hybrid system with battery storage keeps essential circuits running. We quote both so you can compare.'],
-    ['What maintenance does it need?',
-     'Very little. Rinse the panels every few months to clear dust and check the inverter status light. We offer an annual maintenance contract covering cleaning, electrical checks and performance monitoring.'],
-    ['Do you offer EMI or financing?',
-     'Yes. Collateral-free solar loans are available for residential systems, with tenures up to seven years. For most homes the EMI lands close to the bill it replaces. <a href="/financing.php" class="font-semibold text-primary-700 hover:text-primary-600">See financing options</a>.'],
-    ['What warranty do I get?',
-     'Panels carry a 25-year performance warranty, inverters five to ten years depending on model, and our own installation workmanship is warranted for five years.'],
+  [
+    'How much does rooftop solar cost in Gurgaon?',
+    'A turnkey residential system runs roughly ₹60,000 per kW installed. A typical 3 kW home system is about ₹1,80,000 before subsidy and ₹1,02,000 after the full ₹78,000 PM Surya Ghar subsidy. <a href="/solar-calculator.php" class="font-semibold text-primary-700 hover:text-primary-600">Use the calculator</a> for a figure based on your own bill.'
+  ],
+  [
+    'How much subsidy will I actually get?',
+    'Under PM Surya Ghar you get ₹30,000 per kW for the first 2 kW and ₹18,000 for the third, capped at ₹78,000. So 1 kW earns ₹30,000, 2 kW earns ₹60,000, and anything 3 kW or larger earns ₹78,000. It is paid straight into your bank account after commissioning. <a href="/pm-surya-ghar.php" class="font-semibold text-primary-700 hover:text-primary-600">Full scheme details</a>.'
+  ],
+  [
+    'How much will my electricity bill drop?',
+    'Most households see a 70–90% reduction. Fixed charges and meter rent still apply, so bills rarely reach exactly zero. A correctly sized system typically pays for itself in four to six years and then runs for another twenty.'
+  ],
+  [
+    'How long does installation take?',
+    'The physical installation is one to three days. The full process — application, DISCOM approval, installation, net meter and inspection — usually runs three to six weeks. We handle the paperwork at every stage.'
+  ],
+  [
+    'Will solar work during a power cut?',
+    'A standard on-grid system shuts down during an outage for lineworker safety. If you need backup, a hybrid system with battery storage keeps essential circuits running. We quote both so you can compare.'
+  ],
+  [
+    'What maintenance does it need?',
+    'Very little. Rinse the panels every few months to clear dust and check the inverter status light. We offer an annual maintenance contract covering cleaning, electrical checks and performance monitoring.'
+  ],
+  [
+    'Do you offer EMI or financing?',
+    'Yes. Collateral-free solar loans are available for residential systems, with tenures up to seven years. For most homes the EMI lands close to the bill it replaces. <a href="/financing.php" class="font-semibold text-primary-700 hover:text-primary-600">See financing options</a>.'
+  ],
+  [
+    'What warranty do I get?',
+    'Panels carry a 25-year performance warranty, inverters five to ten years depending on model, and our own installation workmanship is warranted for five years.'
+  ],
 ];
 
 // FAQPage schema — the homepage is the page most likely to earn the rich result.
 $jsonLd = [[
-    '@context' => 'https://schema.org',
-    '@type' => 'FAQPage',
-    'mainEntity' => array_map(fn($f) => [
-        '@type' => 'Question',
-        'name' => $f[0],
-        // Schema wants the answer text, not the markup we render on the page.
-        'acceptedAnswer' => ['@type' => 'Answer', 'text' => strip_tags($f[1])],
-    ], $faqItems),
+  '@context' => 'https://schema.org',
+  '@type' => 'FAQPage',
+  'mainEntity' => array_map(fn($f) => [
+    '@type' => 'Question',
+    'name' => $f[0],
+    // Schema wants the answer text, not the markup we render on the page.
+    'acceptedAnswer' => ['@type' => 'Answer', 'text' => strip_tags($f[1])],
+  ], $faqItems),
 ]];
 
 require __DIR__ . '/components/header.php';
@@ -56,71 +72,69 @@ require __DIR__ . '/components/header.php';
 
 <?php $heroSlides = ['/assets/images/hero-image-1.png', '/assets/images/hero-image-2.png', '/assets/images/hero-image-3.png']; ?>
 
-<section id="hero" class="relative overflow-hidden">
-  <?php // Full-bleed slides behind a fixed-width card floated over their right side.
-        // Below lg the card leaves the overlay and stacks under the image, so it never
-        // covers the artwork on a phone. ?>
-  <div class="relative h-[280px] sm:h-[380px] lg:h-[640px] xl:h-[720px]">
+<section id="hero" class="hero-slider-section">
+  <?php // Full-bleed slides behind a fixed-width card floated over their right side. ?>
+  <div class="hero-slider-wrapper">
     <?php foreach ($heroSlides as $i => $slide): ?>
       <img data-hero-slide src="<?= e($slide) ?>" alt=""
-           class="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 <?= $i ? 'opacity-0' : '' ?>">
+        class="hero-slide-img <?= $i ? 'is-hidden' : 'is-active' ?>">
     <?php endforeach; ?>
 
-    <?php // Keeps the card legible over whichever slide is showing. ?>
-    <div class="pointer-events-none absolute inset-0 hidden lg:block bg-gradient-to-l from-black/65 via-black/20 to-transparent"
-         role="presentation"></div>
+    <?php // Gradient overlay for readability on desktop ?>
+    <div class="hero-slider-overlay" role="presentation"></div>
   </div>
 
-  <div class="static lg:absolute lg:inset-0">
-    <div class="container mx-auto flex h-full items-center justify-end px-6">
-      <div class="w-full py-8 lg:w-[420px] lg:shrink-0 lg:py-0">
-        <?php $ctaBare = true; require __DIR__ . '/components/consultation-cta.php'; ?>
+  <div class="hero-content-layer">
+    <div class="hero-container">
+      <div class="hero-cta-box">
+        <?php $ctaBare = true;
+        require __DIR__ . '/components/consultation-cta.php'; ?>
       </div>
     </div>
   </div>
 </section>
 
 <section class="mx-auto container px-6 pt-10">
-  <div class="grid gap-8 md:grid-cols-2 md:items-center">
-  <div>
-    <h2 class="text-3xl font-extrabold text-gray-900 leading-tight">
-      Powering Homes and Businesses with Clean Solar Energy
-    </h2>
-    <p class="mt-4 text-gray-600">
-      Hindustan Vidyut Udyog designs, installs and maintains rooftop solar systems end to end —
-      from the first site survey to subsidy paperwork and long-term AMC. Reliable hardware,
-      certified workmanship, and savings that start with your very next bill.
-    </p>
-  </div>
-
-  <div data-hero-right class="grid gap-3 sm:grid-cols-2">
-    <div class="rounded-3xl p-5 border border-gray-900 flex flex-col justify-between">
-      <p class="text-sm text-gray-600">
-        At Hindustan Vidyut Udyog, we power growth and sustainability.
+  <div class="grid gap-8 lg:grid-cols-2 md:items-center">
+    <div>
+      <h2 class="text-3xl font-extrabold text-gray-900 leading-tight">
+        Powering Homes and Businesses with Clean Solar Energy
+      </h2>
+      <p class="mt-4 text-gray-600">
+        Hindustan Vidyut Udyog designs, installs and maintains rooftop solar systems end to end —
+        from the first site survey to subsidy paperwork and long-term AMC. Reliable hardware,
+        certified workmanship, and savings that start with your very next bill.
       </p>
-      <div class="mt-4 flex items-center gap-6">
-        <div>
-          <p class="text-3xl font-extrabold text-gray-900"><?= e(setting('stat_systems_installed', '1200+')) ?></p>
-          <p class="text-sm font-semibold text-gray-700">Solar Panels<br>Installed</p>
-        </div>
-        <div class="flex items-center gap-3">
-          <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent-500/10 text-accent-600">
-            <?= icon('shield', 'h-5 w-5') ?>
-          </span>
-          <p class="text-sm font-semibold text-gray-700">ISO, LEED, Energy<br>Star Certificate</p>
+    </div>
+
+    <div data-hero-right class="grid gap-3 sm:grid-cols-2">
+      <div class="rounded-3xl p-5 border border-gray-900 flex flex-col justify-between">
+        <p class="text-sm text-gray-600">
+          At Hindustan Vidyut Udyog, we power growth and sustainability.
+        </p>
+        <div class="mt-4 flex items-center gap-6">
+          <div>
+            <p class="xl:text-3xl font-extrabold text-gray-900"><?= e(setting('stat_systems_installed', '1200+')) ?></p>
+            <p class="text-sm font-semibold text-gray-700">Solar Panels<br>Installed</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent-500/10 text-accent-600">
+              <?= icon('shield', 'h-5 w-5') ?>
+            </span>
+            <p class="text-sm font-semibold text-gray-700" style="font-size: 13px;">ISO, LEED, Energy<br>Star Certificate</p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="rounded-3xl bg-accent-500 p-5 flex flex-col justify-between">
-      <h3 class="font-bold text-gray-900 text-lg leading-snug">
-        Discover Next-Gen Solar Solutions
-      </h3>
-      <a href="/services.php" class="btn-outline bg-gray-900 border-gray-900 text-white hover:bg-gray-800 hover:border-gray-800 mt-4 self-start">
-        Explore Solutions <span class="btn-icon bg-accent-500 text-ink"><?= icon('arrow-right', 'h-4 w-4') ?></span>
-      </a>
+      <div class="rounded-3xl bg-accent-500 p-5 flex flex-col justify-between">
+        <h3 class="font-bold text-gray-900 text-lg leading-snug">
+          Discover Next-Gen Solar Solutions
+        </h3>
+        <a href="/services.php" class="extra-padding btn-outline bg-gray-900 border-gray-900 text-white hover:bg-gray-800 hover:border-gray-800 mt-4 self-start">
+          Explore Solutions <span class="btn-icon bg-accent-500 text-ink"><?= icon('arrow-right', 'h-4 w-4') ?></span>
+        </a>
+      </div>
     </div>
-  </div>
   </div>
 </section>
 
@@ -143,37 +157,27 @@ require __DIR__ . '/components/header.php';
   </div>
 </section>
 
-<section class="relative mx-3 my-3 overflow-hidden rounded-3xl bg-ink bg-cover bg-center px-6 py-16"
-         style="background-image:url('/assets/images/pm-surya-ghar-banner.png')">
-  <div class="absolute inset-0 bg-ink/85"></div>
-  <div class="relative mx-auto container grid gap-8 md:grid-cols-2 items-center">
-    <div>
-      <span class="inline-flex rounded-full border border-accent-400/50 text-accent-400 text-sm font-medium px-4 py-1.5">
-        Government Scheme
-      </span>
-      <h2 class="mt-5 text-3xl font-extrabold text-white leading-tight">
+<!-- PM Surya Ghar Banner Section -->
+<section class="pm-banner-section" style="background-image: url('/assets/images/pm-surya-ghar-banner.png');">
+  <!-- Dual Overlay for clear image visibility on right & readable text on left -->
+  <div class="pm-banner-overlay-grad"></div>
+  <div class="pm-banner-overlay-top"></div>
+
+  <div class="pm-banner-container">
+    <div class="pm-banner-content">
+      <span class="pm-banner-badge">Government Scheme</span>
+      <h2 class="pm-banner-title">
         Up to ₹78,000 Government Subsidy on Solar
       </h2>
-      <p class="mt-4 text-gray-300 max-w-md">
+      <p class="pm-banner-desc">
         Under the PM Surya Ghar Muft Bijli Yojana, eligible households get a direct subsidy
         toward their rooftop solar system. We check your eligibility and handle the paperwork.
       </p>
-      <a href="/pm-surya-ghar.php" class="btn-primary mt-6 bg-white text-gray-900 hover:bg-gray-100">
-        Learn More <span class="btn-icon bg-accent-500 text-ink"><?= icon('arrow-right', 'h-4 w-4') ?></span>
-      </a>
     </div>
-    <div class="flex flex-wrap gap-4">
-      <?php foreach ([
-        ['1 kW', '₹30,000'],
-        ['2 kW', '₹60,000'],
-        ['3 kW+', '₹78,000'],
-      ] as [$size, $amount]): ?>
-        <div class="card bg-white/95 backdrop-blur px-6 py-4">
-          <p class="text-2xl font-bold text-primary-700"><?= e($amount) ?></p>
-          <p class="text-sm text-gray-600"><?= e($size) ?> system</p>
-        </div>
-      <?php endforeach; ?>
-    </div>
+
+    <a href="/pm-surya-ghar.php" class="pm-banner-btn">
+      Learn More <span class="pm-btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
+    </a>
   </div>
 </section>
 
@@ -187,16 +191,18 @@ require __DIR__ . '/components/header.php';
     </p>
   </div>
   <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-    <?php foreach ([
-      ['Comprehensive Site Assessment', 'We assess location, sunlight, shading, and energy needs to design the most efficient, site-specific solar system.'],
-      ['Custom System Design', 'Each solar system is designed to maximize performance, match your property, and meet technical and visual expectations.'],
-      ['High-Efficiency Solar Panels', 'We install premium, high-performance panels built for durability, long-term output, and guaranteed energy savings over time.'],
-      ['Advanced Inverters & Components', 'Reliable inverters & system components that ensure safety, smart monitoring, & top-level energy conversion efficiency.'],
-      ['Professional Installation', 'Our certified technicians ensure fast, safe, and accurate installation with minimal disruption to your property and routine.'],
-      ['Grid Integration & Metering', 'We handle all utility approvals and grid connection, making sure your solar system runs legally and efficiently from day one.'],
-      ['System Testing & Commissioning', 'Every system is tested for safety, performance, and reliability before final handover and basic training is provided.'],
-      ['Ongoing Support & Maintenance', 'We offer maintenance packages including system monitoring, performance checks, cleaning, and technical support for long-term peace of mind.'],
-    ] as $i => [$title, $desc]): ?>
+    <?php foreach (
+      [
+        ['Comprehensive Site Assessment', 'We assess location, sunlight, shading, and energy needs to design the most efficient, site-specific solar system.'],
+        ['Custom System Design', 'Each solar system is designed to maximize performance, match your property, and meet technical and visual expectations.'],
+        ['High-Efficiency Solar Panels', 'We install premium, high-performance panels built for durability, long-term output, and guaranteed energy savings over time.'],
+        ['Advanced Inverters & Components', 'Reliable inverters & system components that ensure safety, smart monitoring, & top-level energy conversion efficiency.'],
+        ['Professional Installation', 'Our certified technicians ensure fast, safe, and accurate installation with minimal disruption to your property and routine.'],
+        ['Grid Integration & Metering', 'We handle all utility approvals and grid connection, making sure your solar system runs legally and efficiently from day one.'],
+        ['System Testing & Commissioning', 'Every system is tested for safety, performance, and reliability before final handover and basic training is provided.'],
+        ['Ongoing Support & Maintenance', 'We offer maintenance packages including system monitoring, performance checks, cleaning, and technical support for long-term peace of mind.'],
+      ] as $i => [$title, $desc]
+    ): ?>
       <div class="card border border-gray-900 shadow-none">
         <span class="badge bg-accent-500 text-ink font-bold text-sm h-8 w-8 justify-center px-0"><?= sprintf('%02d', $i + 1) ?></span>
         <h3 class="mt-4 font-semibold text-gray-900"><?= e($title) ?></h3>
@@ -213,7 +219,9 @@ require __DIR__ . '/components/header.php';
         <h2 class="text-3xl font-bold text-gray-900">Featured Products</h2>
         <p class="mt-3 text-gray-600">Quality panels, inverters and storage from trusted manufacturers.</p>
       </div>
-      <a href="/products.php" class="btn-outline shrink-0">View All Products <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span></a>
+      <a href="/products.php" class="btn-outline shrink-0 extra-padding">
+        View All Products <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
+      </a>
     </div>
     <div class="grid gap-8 md:grid-cols-3">
       <?php foreach ($products as $product): ?>
@@ -229,7 +237,7 @@ require __DIR__ . '/components/header.php';
             <p class="mt-2 text-sm text-gray-600 flex-1"><?= e($product['description']) ?></p>
             <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
               <span class="text-xs font-medium text-gray-500"><?= e($product['specs']) ?></span>
-              <span class="btn-outline text-sm py-1">
+              <span class="btn-outline text-sm py-1" style="padding-left: 10px;">
                 Enquire
                 <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
               </span>
@@ -248,17 +256,17 @@ require __DIR__ . '/components/header.php';
       <h2 class="text-3xl font-bold text-gray-900">Complete Solar Kits</h2>
       <p class="mt-3 text-gray-600">Panels, inverter, structure, cabling and paperwork in one price. Subsidy already applied.</p>
     </div>
-    <a href="/products.php?category=kit" class="btn-outline">
+    <a href="/products.php?category=kit" class="btn-outline" style="padding-left: 10px;">
       All kits <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
     </a>
   </div>
 
   <div class="grid gap-6 md:grid-cols-3">
     <?php foreach ($homeKits as $kit):
-        $kitNet = (int) ($kit['price'] - $kit['subsidy']);
+      $kitNet = (int) ($kit['price'] - $kit['subsidy']);
     ?>
       <a href="/product-details.php?kit=<?= e(rawurlencode($kit['slug'])) ?>"
-         class="card group flex flex-col border border-gray-900 shadow-none hover:bg-primary-50 transition-colors">
+        class="card group flex flex-col border border-gray-900 shadow-none hover:bg-primary-50 transition-colors">
         <div class="flex items-start justify-between gap-3">
           <h3 class="text-xl font-bold text-gray-900 group-hover:text-primary-700"><?= e($kit['name']) ?></h3>
           <span class="badge shrink-0 bg-primary-50 text-primary-700"><?= e(rtrim(rtrim(number_format((float) $kit['system_kw'], 1), '0'), '.')) ?> kW</span>
@@ -313,7 +321,7 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
     <?php foreach ($rows as $i => $row): ?>
       <div class="marquee">
         <div class="flex w-max <?= $i === 1 ? 'animate-marquee-reverse' : 'animate-marquee' ?>"
-             style="animation-duration:<?= (int) round($rowWidth * ($copies / 2) / 27) ?>s">
+          style="animation-duration:<?= (int) round($rowWidth * ($copies / 2) / 27) ?>s">
           <?php for ($copy = 0; $copy < $copies; $copy++): ?>
             <?php foreach ($row as $t): ?>
               <figure class="relative mr-6 w-[min(90vw,32rem)] shrink-0 pt-4">
@@ -349,7 +357,7 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
   <div class="grid gap-12 md:grid-cols-2 md:items-center">
     <div class="overflow-hidden rounded-3xl border border-gray-900">
       <img src="/assets/images/green-hand-with-solar.png" alt="Rooftop solar installation by Hindustan Vidyut Udyog"
-           loading="lazy" class="h-full w-full object-cover aspect-[4/3]">
+        loading="lazy" class="h-full w-full object-cover aspect-[4/3]">
     </div>
 
     <div>
@@ -366,12 +374,14 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
       </p>
 
       <ul class="mt-6 space-y-3">
-        <?php foreach ([
+        <?php foreach (
+          [
             'Free site survey, system design and quotation',
             'PM Surya Ghar subsidy filed and tracked for you',
             'Tier-1 panels with a 25-year performance warranty',
             'In-house AMC team, not a third-party contractor',
-        ] as $point): ?>
+          ] as $point
+        ): ?>
           <li class="flex items-start gap-3 text-gray-700">
             <span class="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-500 text-ink">
               <?= icon('check', 'h-3.5 w-3.5') ?>
@@ -381,7 +391,7 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
         <?php endforeach; ?>
       </ul>
 
-      <a href="/about.php" class="btn-outline mt-8">
+      <a href="/about.php" class="btn-outline mt-8 extra-padding">
         More About Us <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
       </a>
     </div>
@@ -396,7 +406,9 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
       <h2 class="text-3xl font-bold text-gray-900">Latest From the Blog</h2>
       <p class="mt-3 text-gray-600">Tips, guides and updates from the HVU Solar team.</p>
     </div>
-    <a href="/blog.php" class="btn-outline shrink-0">View All Posts <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span></a>
+    <a href="/blog.php" class="btn-outline shrink-0 extra-padding">
+      View All Posts <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
+    </a>
   </div>
   <div class="grid gap-8 md:grid-cols-3">
     <?php foreach ($posts as $post): ?>
@@ -413,7 +425,7 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
           <p class="mt-2 text-sm text-gray-600 flex-1"><?= e($post['excerpt']) ?></p>
           <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
             <span class="text-xs font-medium text-gray-500"><?= e($post['author']) ?></span>
-            <span class="btn-outline text-sm py-1">
+            <span class="btn-outline text-sm py-1" style="padding-left: 10px;">
               Read More
               <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
             </span>

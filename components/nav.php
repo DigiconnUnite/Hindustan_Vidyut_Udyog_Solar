@@ -66,13 +66,6 @@ $waDigits = preg_replace('/\D/', '', setting('company_whatsapp', $phone));
       <a href="tel:<?= e($phone) ?>" class="inline-flex h-11 items-center gap-2 rounded-lg border border-primary-700 px-4 font-medium text-primary-700 hover:bg-primary-50">
         <?= icon('phone', 'h-4 w-4') ?> Call Now
       </a>
-      <a href="https://wa.me/<?= e($waDigits) ?>" target="_blank" rel="noopener" class="inline-flex h-11 items-center gap-2 rounded-lg bg-[#25D366] px-4 font-medium text-white hover:bg-[#1ebe5b]">
-        <?= icon('whatsapp', 'h-4 w-4') ?> WhatsApp
-      </a>
-      <a href="/contact.php" class="inline-flex h-11 items-center gap-2 rounded-lg bg-accent-500 pl-4 pr-1.5 font-semibold text-white hover:bg-accent-600">
-        Get a Quote
-        <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-accent-600"><?= icon('arrow-right', 'h-4 w-4') ?></span>
-      </a>
       <details class="relative" id="login-menu">
         <summary class="inline-flex h-11 cursor-pointer list-none items-center gap-2 rounded-lg bg-primary-700 px-4 font-semibold text-white hover:bg-primary-800">
           <?= icon('log-in', 'h-4 w-4') ?> Login

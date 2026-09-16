@@ -29,11 +29,11 @@ $ctaBody ??= 'Free site survey, PM Surya Ghar subsidy handled end to end, and a 
         <?= e($ctaBody) ?>
       </p>
       <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
-        <a href="/contact.php" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400">
+        <a href="/contact.php" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400 extra-padding">
           Book a Free Site Survey
           <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
         </a>
-        <a href="/solar-calculator.php" class="btn-outline bg-white/70 backdrop-blur">
+        <a href="/solar-calculator.php" class="btn-outline bg-white/70 backdrop-blur extra-padding">
           Calculate My Savings
           <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
         </a>

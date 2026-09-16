@@ -40,11 +40,14 @@ $services = db()->query('SELECT * FROM services ORDER BY sort_order')->fetchAll(
 require __DIR__ . '/../components/admin-header.php';
 ?>
 
+<h1 class="mb-6 text-2xl font-semibold text-gray-900"><?= e($pageTitle) ?></h1>
+
 <div class="flex items-center justify-end mb-6">
-  <button onclick="openServiceModal()" class="btn-primary text-sm">+ Add Service</button>
+  <button onclick="openServiceModal()" class="btn-primary text-sm flex flex-1 items-center justify-center">+ Add Service</button>
 </div>
 
-<div class="card overflow-x-auto">
+<!-- ================= DESKTOP VIEW (Table Format) ================= -->
+<div class="card overflow-x-auto hidden md:block">
   <table class="w-full text-sm">
     <thead>
       <tr class="text-left text-gray-500 border-b border-gray-100">
@@ -62,7 +65,7 @@ require __DIR__ . '/../components/admin-header.php';
           <td class="py-3 pr-4 text-gray-500"><?= (int) $service['sort_order'] ?></td>
           <td class="py-3 pr-4 space-x-2 whitespace-nowrap">
             <button onclick='openServiceModal(<?= json_encode($service) ?>)' class="text-primary-600 hover:underline text-xs">Edit</button>
-            <form method="post" class="inline" onsubmit="return confirm('Remove this service?')">
+            <form method="post" class="inline">
               <?= csrf_field() ?>
               <input type="hidden" name="id" value="<?= $service['id'] ?>">
               <input type="hidden" name="action" value="delete">
@@ -75,6 +78,41 @@ require __DIR__ . '/../components/admin-header.php';
   </table>
 </div>
 
+<!-- ================= MOBILE & TABLET VIEW (Card Layout) ================= -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
+  <?php foreach ($services as $service): ?>
+    <div class="card p-4 flex flex-col justify-between space-y-3 border border-gray-100 rounded-lg shadow-sm bg-white">
+      <div>
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <h3 class="font-medium text-gray-900 text-base leading-snug"><?= e($service['title']) ?></h3>
+          <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full shrink-0 font-medium">
+            Order: <?= (int) $service['sort_order'] ?>
+          </span>
+        </div>
+        
+        <?php if (!empty($service['description'])): ?>
+          <p class="text-xs text-gray-600 line-clamp-3 leading-relaxed mb-1">
+            <?= e($service['description']) ?>
+          </p>
+        <?php else: ?>
+          <p class="text-xs text-gray-400 italic mb-1">No description provided</p>
+        <?php endif; ?>
+      </div>
+
+      <div class="pt-3 border-t border-gray-100 flex items-center justify-end space-x-3 gap-4" style="padding-top: 6px;">
+        <button onclick='openServiceModal(<?= json_encode($service) ?>)' class="text-primary-600 hover:underline text-xs font-medium">Edit</button>
+        <form method="post" class="flex">
+          <?= csrf_field() ?>
+          <input type="hidden" name="id" value="<?= $service['id'] ?>">
+          <input type="hidden" name="action" value="delete">
+          <button type="submit" class="text-xs text-red-600 hover:underline font-medium">Remove</button>
+        </form>
+      </div>
+    </div>
+  <?php endforeach; ?>
+</div>
+
+<!-- ================= MODAL COMPONENT (Unchanged) ================= -->
 <div id="service-modal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center px-4 z-50">
   <div class="card w-full max-w-md">
     <h2 id="service-modal-title" class="font-semibold text-gray-900 mb-4">Add Service</h2>
@@ -94,8 +132,8 @@ require __DIR__ . '/../components/admin-header.php';
         <input type="number" name="sort_order" id="service-sort" class="input mt-1" value="0">
       </div>
       <div class="flex gap-3 pt-2">
-        <button type="button" onclick="document.getElementById('service-modal').classList.add('hidden')" class="btn-outline flex-1">Cancel</button>
-        <button type="submit" class="btn-primary flex-1">Save</button>
+        <button type="button" onclick="document.getElementById('service-modal').classList.add('hidden')" class="btn-outline flex flex-1 items-center justify-center">Cancel</button>
+        <button type="submit" class="btn-primary flex flex-1 items-center justify-center">Save</button>
       </div>
     </form>
   </div>

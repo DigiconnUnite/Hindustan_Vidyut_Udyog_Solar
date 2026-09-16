@@ -130,10 +130,10 @@ require __DIR__ . '/components/page-banner.php';
       </p>
 
       <div class="mt-8 flex flex-wrap gap-3">
-        <a href="/solar-calculator.php" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400">
+        <a href="/solar-calculator.php" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400 extra-padding">
           Check my subsidy <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
         </a>
-        <a href="https://pmsuryaghar.gov.in/" target="_blank" rel="noopener" class="btn-outline">
+        <a href="https://pmsuryaghar.gov.in/" target="_blank" rel="noopener" class="btn-outline extra-padding">
           Official portal <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
         </a>
       </div>
@@ -208,7 +208,7 @@ require __DIR__ . '/components/page-banner.php';
     </div>
 
     <p class="mt-8 text-center">
-      <a href="/solar-calculator.php" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400">
+      <a href="/solar-calculator.php" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400 extra-padding">
         Calculate my exact subsidy <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
       </a>
     </p>
@@ -271,7 +271,7 @@ require __DIR__ . '/components/page-banner.php';
       </p>
     </div>
 
-    <ol class="mx-auto mt-12 max-w-3xl space-y-4">
+    <ol class="mx-auto mt-12 max-w-3xl space-y-0 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2">
       <?php foreach ($steps as $i => [$title, $body]): ?>
         <li class="card flex gap-5 border border-gray-900 shadow-none">
           <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-500 font-bold text-ink"><?= sprintf('%02d', $i + 1) ?></span>
@@ -282,17 +282,6 @@ require __DIR__ . '/components/page-banner.php';
         </li>
       <?php endforeach; ?>
     </ol>
-
-    <div class="mx-auto mt-10 max-w-3xl rounded-2xl bg-ink px-8 py-7 text-center">
-      <p class="text-lg font-semibold text-white">We do the paperwork, not you.</p>
-      <p class="mt-2 text-sm text-gray-300">
-        As a registered vendor we handle the portal application, DISCOM liaison, net metering and the
-        subsidy claim. You sign where needed and we keep you posted at each stage.
-      </p>
-      <a href="/contact.php" class="btn-primary mt-6 bg-accent-500 text-ink hover:bg-accent-400">
-        Start my application <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
-      </a>
-    </div>
   </div>
 </section>
 
@@ -393,7 +382,7 @@ $faqEyebrow = 'Scheme FAQ';
 $faqTitle = 'PM Surya Ghar questions, answered';
 $faqIntro = 'Subsidy amounts, eligibility edge cases, timelines and what disqualifies a claim.';
 $faqItems = $schemeFaqs;
-$faqFooter = '<a href="/contact.php" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400">Ask us your question <span class="btn-icon">' . icon('arrow-right', 'h-4 w-4') . '</span></a>';
+$faqFooter = '<a href="/contact.php" class="btn-primary bg-accent-500 text-ink hover:bg-accent-400 extra-padding">Ask us your question <span class="btn-icon">' . icon('arrow-right', 'h-4 w-4') . '</span></a>';
 require __DIR__ . '/components/faq-section.php';
 ?>
 
@@ -408,5 +397,7 @@ require __DIR__ . '/components/faq-section.php';
     the national portal. Always verify current terms on the official portal before committing.
   </p>
 </section> -->
+
+<?php require __DIR__ . '/components/closing-cta.php'; ?>
 
 <?php require __DIR__ . '/components/footer.php'; ?>

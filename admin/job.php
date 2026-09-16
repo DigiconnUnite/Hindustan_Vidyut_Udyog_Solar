@@ -80,7 +80,7 @@ require __DIR__ . '/../components/admin-header.php';
         <?= csrf_field() ?>
         <label class="text-sm font-medium text-gray-700">Notes</label>
         <textarea name="notes" rows="3" class="input mt-1"><?= e($job['notes']) ?></textarea>
-        <button type="submit" class="btn-outline text-sm mt-2">Save Notes</button>
+        <button type="submit" class="btn-outline text-sm mt-2 flex items-center justify-center flex-1 text-center" style="padding-left: 6px;">Save Notes</button>
       </form>
     </div>
 
@@ -128,7 +128,7 @@ require __DIR__ . '/../components/admin-header.php';
 
     <?php if ($user['role'] === 'admin'): ?>
       <div class="flex gap-2">
-        <select id="assign-select" class="input">
+        <select id="assign-select" class="input" style="display: flex; flex: 2;">
           <option value="">Assign technician…</option>
           <?php foreach ($allStaff as $staff): ?>
             <?php if (!in_array($staff['id'], $assignedIds, true)): ?>
@@ -136,7 +136,7 @@ require __DIR__ . '/../components/admin-header.php';
             <?php endif; ?>
           <?php endforeach; ?>
         </select>
-        <button id="assign-btn" class="btn-outline text-sm whitespace-nowrap">Add</button>
+        <button id="assign-btn" class="btn-outline text-sm whitespace-nowrap flex items-center justify-center flex-1 text-center">Add</button>
       </div>
     <?php endif; ?>
   </div>

@@ -78,11 +78,16 @@ $projects = db()->query('SELECT * FROM projects ORDER BY is_active DESC, sort_or
 require __DIR__ . '/../components/admin-header.php';
 ?>
 
+<h1 class="mb-6 text-2xl font-semibold text-gray-900"><?= e($pageTitle) ?></h1>
+
 <div class="flex items-center justify-end mb-6">
-  <button onclick="openProjectModal()" class="btn-primary text-sm">+ Add Project</button>
+  <button onclick="openProjectModal()" class="btn-primary text-sm flex flex-1 justify-center items-center gap-2">
+    + Add Project
+  </button>
 </div>
 
-<div class="card overflow-x-auto">
+<!-- ================= DESKTOP VIEW (Table Format) ================= -->
+<div class="card overflow-x-auto hidden md:block">
   <table class="w-full text-sm">
     <thead>
       <tr class="text-left text-gray-500 border-b border-gray-100">
@@ -123,6 +128,48 @@ require __DIR__ . '/../components/admin-header.php';
   </table>
 </div>
 
+<!-- ================= MOBILE & TABLET VIEW (Card Layout) ================= -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
+  <?php foreach ($projects as $p): ?>
+    <div class="card p-4 flex flex-col justify-between space-y-3 border border-gray-100 rounded-lg shadow-sm bg-white">
+      <div>
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <h3 class="font-medium text-gray-900 text-base leading-snug"><?= e($p['title']) ?></h3>
+          <span class="badge shrink-0 <?= $p['is_active'] ? 'bg-primary-50 text-primary-700' : 'bg-gray-100 text-gray-500' ?>">
+            <?= $p['is_active'] ? 'Active' : 'Removed' ?>
+          </span>
+        </div>
+        
+        <p class="text-xs text-gray-500 mb-3"><?= e($p['location']) ?></p>
+
+        <div class="grid grid-cols-2 gap-2 text-xs p-2.5 rounded-md">
+          <div>
+            <span class="text-gray-400 block">Size:</span>
+            <span class="font-medium text-gray-700"><?= e(rtrim(rtrim(number_format((float) $p['system_kw'], 1), '0'), '.')) ?> kW</span>
+          </div>
+          <div>
+            <span class="text-gray-400 block">Segment:</span>
+            <span class="font-medium text-gray-700"><?= e(ucfirst($p['segment'])) ?></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-gray-100 flex items-center justify-end space-x-3 gap-4">
+        <button onclick='openProjectModal(<?= json_encode($p) ?>)' class="text-primary-600 hover:underline text-xs font-medium">Edit</button>
+        <?php if ($p['is_active']): ?>
+          <form method="post" class="flex">
+            <?= csrf_field() ?>
+            <input type="hidden" name="id" value="<?= $p['id'] ?>">
+            <input type="hidden" name="action" value="delete">
+            <button type="submit" class="text-xs text-red-600 hover:underline font-medium">Remove</button>
+          </form>
+        <?php endif; ?>
+      </div>
+    </div>
+  <?php endforeach; ?>
+</div>
+
+<!-- ================= MODAL COMPONENT (Unchanged) ================= -->
 <div id="project-modal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center px-4 z-50 overflow-y-auto py-8">
   <div class="card w-full max-w-lg">
     <h2 id="project-modal-title" class="font-semibold text-gray-900 mb-4">Add Project</h2>
@@ -175,8 +222,8 @@ require __DIR__ . '/../components/admin-header.php';
         <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" class="input mt-1">
       </div>
       <div class="flex gap-3 pt-2">
-        <button type="button" onclick="document.getElementById('project-modal').classList.add('hidden')" class="btn-outline flex-1">Cancel</button>
-        <button type="submit" class="btn-primary flex-1">Save</button>
+        <button type="button" onclick="document.getElementById('project-modal').classList.add('hidden')" class="btn-outline flex flex-1 items-center justify-center">Cancel</button>
+        <button type="submit" class="btn-primary flex flex-1 items-center justify-center">Save</button>
       </div>
     </form>
   </div>

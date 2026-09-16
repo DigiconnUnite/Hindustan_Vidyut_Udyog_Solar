@@ -205,7 +205,7 @@ require __DIR__ . '/components/page-banner.php';
             <?php else: ?>
               <span class="text-xs font-medium text-gray-500">Complete system</span>
             <?php endif; ?>
-            <a href="<?= e($detailUrl) ?>" class="btn-outline text-sm py-1">
+            <a href="<?= e($detailUrl) ?>" class="btn-outline text-sm py-1" style="padding-left: 10px;">
               Details <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
             </a>
           </div>

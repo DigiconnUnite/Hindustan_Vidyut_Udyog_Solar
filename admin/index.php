@@ -25,6 +25,8 @@ $statusColors = [
 require __DIR__ . '/../components/admin-header.php';
 ?>
 
+<h1 class="mb-6 text-2xl font-semibold text-gray-900"><?= e($pageTitle) ?></h1>
+
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
   <div class="card">
     <p class="text-sm text-gray-500">Active Jobs</p>
@@ -48,7 +50,9 @@ require __DIR__ . '/../components/admin-header.php';
   <div class="card">
     <div class="flex items-center justify-between mb-4">
       <h2 class="font-semibold text-gray-900">Recent Jobs</h2>
-      <a href="/admin/jobs.php" class="text-sm text-primary-600 hover:underline">View all</a>
+      <a href="/admin/jobs.php" class="text-sm text-primary-600 hover:underline extra-padding">
+        View all
+      </a>
     </div>
     <div class="space-y-3">
       <?php foreach ($recentJobs as $job): ?>
@@ -67,7 +71,9 @@ require __DIR__ . '/../components/admin-header.php';
   <div class="card">
     <div class="flex items-center justify-between mb-4">
       <h2 class="font-semibold text-gray-900">Recent Leads</h2>
-      <a href="/admin/leads.php" class="text-sm text-primary-600 hover:underline">View all</a>
+      <a href="/admin/leads.php" class="text-sm text-primary-600 hover:underline extra-padding">
+        View all
+      </a>
     </div>
     <div class="space-y-3">
       <?php foreach ($recentLeads as $lead): ?>

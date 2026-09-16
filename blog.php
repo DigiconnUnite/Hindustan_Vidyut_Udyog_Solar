@@ -29,7 +29,7 @@ require __DIR__ . '/components/page-banner.php';
           <p class="mt-2 text-sm text-gray-600 flex-1"><?= e($post['excerpt']) ?></p>
           <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
             <span class="text-xs font-medium text-gray-500"><?= e($post['author']) ?></span>
-            <span class="btn-outline text-sm py-1">
+            <span class="btn-outline text-sm py-1" style="padding-left: 10px;">
               Read More
               <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
             </span>

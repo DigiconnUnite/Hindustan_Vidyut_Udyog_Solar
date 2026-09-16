@@ -143,7 +143,7 @@ require __DIR__ . '/components/header.php';
         <h2 class="text-2xl font-bold text-gray-900">More From the Blog</h2>
         <p class="mt-2 text-sm text-gray-600">Guides and updates from our solar team.</p>
       </div>
-      <a href="/blog.php" class="btn-outline text-sm py-1">
+      <a href="/blog.php" class="btn-outline text-sm py-1 extra-padding">
         View All Posts <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
       </a>
     </div>

@@ -76,4 +76,6 @@ require __DIR__ . '/components/page-banner.php';
 
 <?php require __DIR__ . '/components/consultation-cta.php'; ?>
 
+<?php require __DIR__ . '/components/closing-cta.php'; ?>
+
 <?php require __DIR__ . '/components/footer.php'; ?>

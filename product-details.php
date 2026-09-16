@@ -383,7 +383,7 @@ require __DIR__ . '/components/header.php';
         <h2 class="text-2xl font-bold text-gray-900">You May Also Like</h2>
         <p class="mt-2 text-sm text-gray-600"><?= $kit ? 'Other complete kits from our range.' : 'Other products from our solar range.' ?></p>
       </div>
-      <a href="/products.php" class="btn-outline text-sm py-1">
+      <a href="/products.php" class="btn-outline text-sm py-1 extra-padding">
         View All Products <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
       </a>
     </div>
@@ -426,7 +426,7 @@ require __DIR__ . '/components/header.php';
        class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#25D366] text-white">
       <?= icon('whatsapp', 'h-5 w-5') ?>
     </a>
-    <a href="#enquiry" class="flex-1 inline-flex items-center justify-between gap-2 rounded-lg bg-accent-500 py-1.5 pl-5 pr-1.5 font-semibold text-white hover:bg-accent-600">
+    <a href="#enquiry" class="flex-1 inline-flex items-center justify-between gap-2 rounded-lg bg-accent-500 py-1.5 pl-5 pr-1.5 font-semibold text-white hover:bg-accent-600 extra-padding">
       Get a Free Quote
       <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white text-accent-600"><?= icon('arrow-right', 'h-4 w-4') ?></span>
     </a>

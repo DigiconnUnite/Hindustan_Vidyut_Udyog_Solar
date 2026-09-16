@@ -40,7 +40,7 @@ require __DIR__ . '/components/page-banner.php';
 <section class="mx-auto container px-6 py-16">
   <div class="grid gap-8 overflow-hidden lg:grid-cols-[1fr_400px] items-start">
 
-      <div class="rounded-3xl bg-gray-50 p-6 md:p-10">
+      <div class="rounded-3xl bg-gray-50 p-6 md:p-10 border border-gray-200">
         <h2 class="text-2xl font-bold text-gray-900">Send Us a Message</h2>
         <p class="mt-2 text-sm text-gray-600 max-w-xl">
           Tell us a little about your property and what you need. Our team responds
