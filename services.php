@@ -20,28 +20,60 @@ require __DIR__ . '/components/header.php';
 require __DIR__ . '/components/page-banner.php';
 ?>
 
-<section class="mx-auto container px-6 py-16 space-y-10">
-  <?php foreach ($services as $i => $service): ?>
-    <div class="grid gap-8 md:grid-cols-5 items-center <?= $i % 2 === 1 ? 'md:[&>*:first-child]:order-2' : '' ?>">
-      <?php $img = $serviceImages[$service['icon']] ?? 'https://placehold.co/600x450?text=' . urlencode($service['title']); ?>
-      <img src="<?= e($img) ?>" alt="<?= e($service['title']) ?>" loading="lazy" class="md:col-span-2 aspect-[4/3] w-full rounded-2xl object-cover bg-gray-100">
-      <div class="md:col-span-3">
-        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight"><?= e($service['title']) ?></h2>
-        <p class="mt-4 text-lg text-gray-700"><?= e($service['description']) ?></p>
-        <?php if ($extra = service_content($service['icon'])): ?>
-          <p class="mt-4 text-gray-600"><?= e($extra['body']) ?></p>
-          <ul class="mt-6 space-y-2.5">
-            <?php foreach ($extra['points'] as $point): ?>
-              <li class="flex gap-3 text-gray-700">
-                <span class="mt-0.5 shrink-0 text-primary-600"><?= icon('check', 'h-5 w-5') ?></span>
-                <span><?= e($point) ?></span>
-              </li>
-            <?php endforeach; ?>
-          </ul>
-        <?php endif; ?>
+<section class="services-section">
+  <div class="services-container">
+
+    <?php foreach ($services as $i => $service): ?>
+      <div class="service-row <?= $i % 2 === 1 ? 'service-row-reverse' : '' ?>">
+        <?php
+        $img = $serviceImages[$service['icon']]
+          ?? 'https://placehold.co/600x450?text=' . urlencode($service['title']);
+        ?>
+
+        <!-- Image -->
+        <div class="service-image-wrapper">
+          <img
+            src="<?= e($img) ?>"
+            alt="<?= e($service['title']) ?>"
+            loading="lazy"
+            class="service-image">
+        </div>
+
+        <!-- Content -->
+        <div class="service-content">
+          <h2 class="service-title">
+            <?= e($service['id']) ?>.
+            <?= e($service['title']) ?>
+          </h2>
+
+          <p class="service-description">
+            <?= e($service['description']) ?>
+          </p>
+
+          <?php if ($extra = service_content($service['icon'])): ?>
+            <p class="service-extra">
+              <?= e($extra['body']) ?>
+            </p>
+
+            <ul class="service-points">
+              <?php foreach ($extra['points'] as $point): ?>
+                <li class="service-point">
+                  <span class="service-check">
+                    <?= icon('check', 'h-5 w-5') ?>
+                  </span>
+
+                  <span class="service-point-text">
+                    <?= e($point) ?>
+                  </span>
+                </li>
+              <?php endforeach; ?>
+            </ul>
+          <?php endif; ?>
+        </div>
       </div>
-    </div>
-  <?php endforeach; ?>
+    <?php endforeach; ?>
+
+  </div>
 </section>
 
 <?php require __DIR__ . '/components/closing-cta.php'; ?>

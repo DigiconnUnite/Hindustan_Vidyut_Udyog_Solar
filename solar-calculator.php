@@ -103,7 +103,7 @@ require __DIR__ . '/components/page-banner.php';
         Your roof area is the limiting factor here — the system is sized to fit the space, not the full bill.
       </div>
 
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 custom-grid">
         <?php
         $tiles = [
             ['out-kw',      'System size',      number_format($initial['system_kw'], 1) . ' kW', 'sun'],

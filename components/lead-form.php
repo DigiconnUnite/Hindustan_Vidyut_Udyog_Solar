@@ -120,7 +120,7 @@ $fieldClass = $leadLight
         class="<?= $fieldClass ?>"><?= $old('message') ?></textarea>
     </div>
 
-    <button type="submit" class="btn-primary w-full flex items-center justify-between bg-accent-500 text-ink hover:bg-accent-400" style="padding-left: 1.5rem;">
+    <button type="submit" class="btn-primary w-full flex items-center justify-between bg-accent-500 text-ink hover:bg-accent-400 custom-form-btn-text" style="padding-left: 1.5rem;">
       <?= e($leadButton) ?>
       <span class="btn-icon bg-white text-accent-600"><?= icon('send', 'h-4 w-4') ?></span>
     </button>
@@ -134,7 +134,7 @@ $fieldClass = $leadLight
     <span class="h-px flex-1 <?= $leadLight ? 'bg-gray-200' : 'bg-white/15' ?>"></span>
   </div>
 
-  <div class="mt-4 grid gap-3 sm:grid-cols-2">
+  <div class="mt-4 grid gap-3 sm:grid-cols-2 form-footer">
     <a href="tel:<?= e(preg_replace('/[^0-9+]/', '', $phoneNumber)) ?>"
       class="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition <?= $leadLight
                                                                                                                       ? 'border border-gray-300 text-gray-900 hover:bg-gray-50'

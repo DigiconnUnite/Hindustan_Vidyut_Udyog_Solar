@@ -28,11 +28,11 @@ $leadAction = e($_SERVER['REQUEST_URI']) . '#enquiry';
         </a>
       </div>
 
-      <div class="pb-6 md:pb-10">
+      <div class="pb-6 md:pb-10 form-responsive-wrapper">
       <?php endif; ?>
 
       <?php
-      $leadTitle = 'Get Your Free Consultation';
+      $leadTitle = ' Free Consultation';
       $leadEyebrow = '';
       require __DIR__ . '/lead-form.php';
       ?>

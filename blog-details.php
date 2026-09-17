@@ -16,7 +16,7 @@ if (!$post) {
 }
 
 $pageTitle = $post['title'] . ' | HVU Solar';
-$metaDescription = mb_substr((string) $post['excerpt'], 0, 155);
+$metaDescription = substr((string) $post['excerpt'], 0, 155);
 $ogImage = $post['image'] ?? '/assets/images/hero-image-1.png';
 
 // Article rich result. The body is the section prose joined up — schema wants the
@@ -162,7 +162,7 @@ require __DIR__ . '/components/header.php';
             <p class="mt-2 text-sm text-gray-600 flex-1"><?= e($rel['excerpt']) ?></p>
             <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
               <span class="text-xs font-medium text-gray-500"><?= e($rel['author']) ?></span>
-              <span class="btn-outline text-sm py-1">
+              <span class="btn-outline text-sm py-1" style="padding-left: 10px;">
                 Read More
                 <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
               </span>

@@ -94,11 +94,12 @@ INSERT INTO users (name, email, password_hash, role, phone) VALUES
 ON DUPLICATE KEY UPDATE name = name;
 -- Default password: "password" (change immediately after first login).
 
-INSERT INTO services (title, description, icon, sort_order) VALUES
-  ('Site Survey', 'Free on-site assessment of your roof and energy needs to design the right system.', 'clipboard', 1),
-  ('Installation', 'End-to-end installation by certified technicians, completed in days not weeks.', 'wrench', 2),
-  ('Maintenance & AMC', 'Annual maintenance contracts to keep your system running at peak efficiency.', 'shield', 3),
-  ('System Upgrade', 'Expand or upgrade an existing solar system as your energy needs grow.', 'arrow-up', 4)
+INSERT INTO services (id, title, description, icon, sort_order) VALUES
+  ('1.','Site Survey', '
+  site assessment of your roof and energy needs to design the right system.', 'clipboard', 1),
+  ('2.','Installation', 'End-to-end installation by certified technicians, completed in days not weeks.', 'wrench', 2),
+  ('3.','Maintenance & AMC', 'Annual maintenance contracts to keep your system running at peak efficiency.', 'shield', 3),
+  ('4.','System Upgrade', 'Expand or upgrade an existing solar system as your energy needs grow.', 'arrow-up', 4)
 ON DUPLICATE KEY UPDATE title = title;
 
 INSERT INTO products (name, category, description, specs, sort_order) VALUES

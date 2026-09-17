@@ -22,9 +22,9 @@ require __DIR__ . '/components/page-banner.php';
   <!-- <div class="grid gap-6 sm:grid-cols-3 mb-14">
     <?php
     $stats = [
-        [number_format($totalKw, 0) . ' kW', 'Installed capacity shown here', 'sun'],
-        [setting('stat_systems_installed', '1200+'), 'Systems commissioned', 'package'],
-        [setting('stat_years_experience', '10+'), 'Years in the field', 'calendar'],
+      [number_format($totalKw, 0) . ' kW', 'Installed capacity shown here', 'sun'],
+      [setting('stat_systems_installed', '1200+'), 'Systems commissioned', 'package'],
+      [setting('stat_years_experience', '10+'), 'Years in the field', 'calendar'],
     ];
     foreach ($stats as [$value, $label, $ico]): ?>
       <div class="card border border-gray-900 shadow-none text-center">
@@ -36,13 +36,34 @@ require __DIR__ . '/components/page-banner.php';
   </div> -->
 
   <!-- Segment filter -->
-  <div class="flex flex-wrap gap-2 justify-center rounded-full bg-gray-100 border border-gray-900 p-1.5 w-fit mx-auto">
-    <button class="proj-filter badge px-5 py-2 font-semibold transition-colors bg-accent-500 text-ink" data-segment="all">All</button>
+  <div class="project-filter-buttons flex flex-wrap gap-2 justify-center rounded-full bg-gray-100 border border-gray-900 p-1.5 w-fit mx-auto">
+    <button
+      class="proj-filter badge px-5 py-2 font-semibold transition-colors bg-accent-500 text-ink"
+      data-segment="all">
+      All
+    </button>
+
     <?php foreach ($segments as $slug => $label): ?>
-      <button class="proj-filter badge px-5 py-2 font-semibold transition-colors text-gray-600 hover:text-gray-900" data-segment="<?= e($slug) ?>">
+      <button
+        class="proj-filter badge px-5 py-2 font-semibold transition-colors text-gray-600 hover:text-gray-900"
+        data-segment="<?= e($slug) ?>">
         <?= e($label) ?>
       </button>
     <?php endforeach; ?>
+  </div>
+
+
+  <!-- Mobile Dropdown -->
+  <div class="project-filter-dropdown">
+    <select id="project-segment-select" class="project-filter-select">
+      <option value="all">All</option>
+
+      <?php foreach ($segments as $slug => $label): ?>
+        <option value="<?= e($slug) ?>">
+          <?= e($label) ?>
+        </option>
+      <?php endforeach; ?>
+    </select>
   </div>
 
   <div class="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -50,7 +71,7 @@ require __DIR__ . '/components/page-banner.php';
       <article class="proj-card card group overflow-hidden p-3 flex flex-col border border-gray-900 shadow-none" data-segment="<?= e($p['segment']) ?>">
         <div class="relative h-52 rounded-2xl bg-gray-100 overflow-hidden">
           <img src="<?= $p['image_path'] ? '/' . e($p['image_path']) : 'https://placehold.co/600x400?text=' . urlencode($p['system_kw'] . ' kW') ?>"
-               alt="<?= e($p['title']) ?>" loading="lazy" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+            alt="<?= e($p['title']) ?>" loading="lazy" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
           <span class="absolute top-3 left-3 badge bg-white/95 backdrop-blur text-primary-700 font-semibold shadow-sm">
             <?= e(rtrim(rtrim(number_format((float) $p['system_kw'], 1), '0'), '.')) ?> kW
           </span>
@@ -85,20 +106,38 @@ require __DIR__ . '/components/page-banner.php';
 <?php require __DIR__ . '/components/consultation-cta.php'; ?>
 
 <script>
-document.querySelectorAll('.proj-filter').forEach(function (btn) {
-  btn.addEventListener('click', function () {
-    var seg = btn.dataset.segment;
-    document.querySelectorAll('.proj-filter').forEach(function (b) {
-      var on = b.dataset.segment === seg;
-      b.classList.toggle('bg-accent-500', on);
-      b.classList.toggle('text-ink', on);
-      b.classList.toggle('text-gray-600', !on);
-    });
-    document.querySelectorAll('.proj-card').forEach(function (card) {
-      card.style.display = (seg === 'all' || card.dataset.segment === seg) ? '' : 'none';
+  document.querySelectorAll('.proj-filter').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var seg = btn.dataset.segment;
+      document.querySelectorAll('.proj-filter').forEach(function(b) {
+        var on = b.dataset.segment === seg;
+        b.classList.toggle('bg-accent-500', on);
+        b.classList.toggle('text-ink', on);
+        b.classList.toggle('text-gray-600', !on);
+      });
+      document.querySelectorAll('.proj-card').forEach(function(card) {
+        card.style.display = (seg === 'all' || card.dataset.segment === seg) ? '' : 'none';
+      });
     });
   });
-});
+</script>
+
+<script>
+  const projectSegmentSelect = document.getElementById('project-segment-select');
+
+  if (projectSegmentSelect) {
+    projectSegmentSelect.addEventListener('change', function() {
+      const segment = this.value;
+
+      const filterButton = document.querySelector(
+        `.proj-filter[data-segment="${segment}"]`
+      );
+
+      if (filterButton) {
+        filterButton.click();
+      }
+    });
+  }
 </script>
 
 <?php require __DIR__ . '/components/closing-cta.php'; ?>

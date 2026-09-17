@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $id = (int) ($_POST['id'] ?? 0);
+    $removeImage = $id && isset($_POST['remove_image']);
     $title = trim($_POST['title'] ?? '');
     $location = trim($_POST['location'] ?? '');
     $kw = (float) ($_POST['system_kw'] ?? 0);
@@ -60,6 +61,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($imagePath) {
             db()->prepare('UPDATE projects SET title=?, slug=?, location=?, system_kw=?, segment=?, completed_on=?, summary=?, monthly_savings=?, sort_order=?, image_path=?, is_active=1 WHERE id=?')
                 ->execute([...$fields, $imagePath, $id]);
+        } elseif ($removeImage) {
+            db()->prepare('UPDATE projects SET title=?, slug=?, location=?, system_kw=?, segment=?, completed_on=?, summary=?, monthly_savings=?, sort_order=?, image_path=NULL, is_active=1 WHERE id=?')
+                ->execute([...$fields, $id]);
         } else {
             db()->prepare('UPDATE projects SET title=?, slug=?, location=?, system_kw=?, segment=?, completed_on=?, summary=?, monthly_savings=?, sort_order=?, is_active=1 WHERE id=?')
                 ->execute([...$fields, $id]);
@@ -91,6 +95,7 @@ require __DIR__ . '/../components/admin-header.php';
   <table class="w-full text-sm">
     <thead>
       <tr class="text-left text-gray-500 border-b border-gray-100">
+        <th class="py-2 pr-4">Image</th>
         <th class="py-2 pr-4">Title</th>
         <th class="py-2 pr-4">Location</th>
         <th class="py-2 pr-4">Size</th>
@@ -102,6 +107,13 @@ require __DIR__ . '/../components/admin-header.php';
     <tbody>
       <?php foreach ($projects as $p): ?>
         <tr class="border-b border-gray-50">
+          <td class="py-3 pr-4">
+            <?php if ($p['image_path']): ?>
+              <img src="/<?= e($p['image_path']) ?>" alt="" class="h-9 w-12 rounded object-cover">
+            <?php else: ?>
+              <span class="text-xs text-gray-400">No Image</span>
+            <?php endif; ?>
+          </td>
           <td class="py-3 pr-4 font-medium text-gray-900"><?= e($p['title']) ?></td>
           <td class="py-3 pr-4 text-gray-600"><?= e($p['location']) ?></td>
           <td class="py-3 pr-4 text-gray-600"><?= e(rtrim(rtrim(number_format((float) $p['system_kw'], 1), '0'), '.')) ?> kW</td>
@@ -134,7 +146,14 @@ require __DIR__ . '/../components/admin-header.php';
     <div class="card p-4 flex flex-col justify-between space-y-3 border border-gray-100 rounded-lg shadow-sm bg-white">
       <div>
         <div class="flex items-start justify-between gap-2 mb-2">
-          <h3 class="font-medium text-gray-900 text-base leading-snug"><?= e($p['title']) ?></h3>
+          <div class="flex min-w-0 items-start gap-3">
+            <?php if ($p['image_path']): ?>
+              <img src="/<?= e($p['image_path']) ?>" alt="" class="h-12 w-12 shrink-0 rounded object-cover">
+            <?php else: ?>
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-gray-100 text-center text-[10px] text-gray-400">No Image</div>
+            <?php endif; ?>
+            <h3 class="font-medium text-gray-900 text-base leading-snug"><?= e($p['title']) ?></h3>
+          </div>
           <span class="badge shrink-0 <?= $p['is_active'] ? 'bg-primary-50 text-primary-700' : 'bg-gray-100 text-gray-500' ?>">
             <?= $p['is_active'] ? 'Active' : 'Removed' ?>
           </span>
@@ -220,6 +239,14 @@ require __DIR__ . '/../components/admin-header.php';
       <div>
         <label class="text-sm font-medium text-gray-700">Photo (jpg/png/webp, max 2MB)</label>
         <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" class="input mt-1">
+        <div id="project-image-current" class="hidden mt-2 rounded border border-gray-200 p-2 img-current-wrapper">
+          <img id="project-image-preview" src="" alt="Current photo" class="h-20 w-20 rounded object-cover">
+          <label class="mt-2 flex items-center gap-2 text-xs text-red-600">
+            <input type="checkbox" name="remove_image" id="project-image-remove" value="1" class="rounded border-gray-300">
+            Remove current photo
+          </label>
+        </div>
+        <p id="project-image-hint" class="hidden mt-1 text-xs text-gray-500">Leave empty to keep the current photo.</p>
       </div>
       <div class="flex gap-3 pt-2">
         <button type="button" onclick="document.getElementById('project-modal').classList.add('hidden')" class="btn-outline flex flex-1 items-center justify-center">Cancel</button>
@@ -233,6 +260,11 @@ require __DIR__ . '/../components/admin-header.php';
 function openProjectModal(project) {
   document.getElementById('project-modal').classList.remove('hidden');
   var set = function (id, value) { document.getElementById(id).value = value; };
+  var currentImage = project && project.image_path;
+  document.getElementById('project-image-current').classList.toggle('hidden', !currentImage);
+  document.getElementById('project-image-hint').classList.toggle('hidden', !currentImage);
+  document.getElementById('project-image-remove').checked = false;
+  document.getElementById('project-image-preview').src = currentImage ? '/' + currentImage : '';
   if (project) {
     document.getElementById('project-modal-title').textContent = 'Edit Project';
     set('project-id', project.id);

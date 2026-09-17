@@ -33,7 +33,7 @@ $waDigits = preg_replace('/\D/', '', setting('company_whatsapp', $phone));
     <div class="min-h-0 overflow-hidden">
     <div class="flex items-center justify-between gap-4 px-6 py-2">
       <div class="flex items-center gap-5">
-        <a href="tel:<?= e(setting('company_phone', '+91 98765 43210')) ?>" class="inline-flex items-center gap-2 hover:text-accent-400">
+        <a href="tel:<?= e(setting('company_phone', '+91 98765 43210')) ?>" class="inline-flex items-center gap-2 hover:text-accent-400 custom-header-phone">
           <?= icon('phone', 'h-4 w-4') ?><?= e(setting('company_phone', '+91 98765 43210')) ?>
         </a>
         <a href="mailto:<?= e(setting('company_email', 'info@hvusolar.com')) ?>" class="hidden sm:inline-flex items-center gap-2 hover:text-accent-400">
@@ -43,7 +43,7 @@ $waDigits = preg_replace('/\D/', '', setting('company_whatsapp', $phone));
       <div class="flex items-center gap-2">
         <?php foreach ($socials as $name => $url): ?>
           <a href="<?= e($url) ?>" aria-label="<?= e($name) ?>"
-             class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/40 hover:bg-white hover:text-primary-700">
+             class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/40 hover:bg-white hover:text-primary-700 custom-header-social-icon" target="_blank">
             <?= icon($name, 'h-4 w-4') ?>
           </a>
         <?php endforeach; ?>
@@ -55,10 +55,10 @@ $waDigits = preg_replace('/\D/', '', setting('company_whatsapp', $phone));
   <!-- Row 2: brand + actions -->
   <div class="flex items-center justify-between gap-4 px-6 py-3">
     <a href="/index.php" data-nav-anim class="flex items-center gap-3">
-      <img src="/assets/images/hvul-logo.png" alt="" class="h-14 w-auto">
+      <img src="/assets/images/hvul-logo.png" alt="" class="h-14 w-auto brand-logo">
       <span class="border-l border-gray-200 pl-3">
-        <span class="block font-bold text-lg leading-tight text-primary-700">Hindustan Vidyut Udyog</span>
-        <span class="block text-xs tracking-wide text-gray-500">Solar &amp; Green Energy</span>
+        <span class="block font-bold text-lg leading-tight text-primary-700 brand-name">Hindustan Vidyut Udyog</span>
+        <span class="block text-xs tracking-wide text-gray-500 brand-subtitle">Solar &amp; Green Energy</span>
       </span>
     </a>
 
@@ -79,7 +79,7 @@ $waDigits = preg_replace('/\D/', '', setting('company_whatsapp', $phone));
       </details>
     </div>
 
-    <button id="nav-toggle" data-nav-anim class="md:hidden text-gray-700" aria-label="Toggle menu">
+    <button id="nav-toggle" data-nav-anim class="md:hidden text-gray-700 toggle-menu" aria-label="Toggle menu">
       <?= icon('menu', 'h-7 w-7') ?>
     </button>
   </div>

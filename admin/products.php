@@ -23,6 +23,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
   $id = (int) ($_POST['id'] ?? 0);
+  $removeImage = $id && isset($_POST['remove_image']);
+  $currentImagePath = null;
+  if ($id) {
+    $currentImagePath = db()->prepare("SELECT image_path FROM {$table} WHERE id = ?");
+    $currentImagePath->execute([$id]);
+    $currentImagePath = $currentImagePath->fetchColumn() ?: null;
+  }
 
   // Shared by both kinds: the image upload kits never had until now.
   $imagePath = null;
@@ -66,10 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
 
     if ($id) {
-      // Only overwrite image_path when a new file came through, or an edit that
-      // leaves the file input empty would blank the existing image.
-      $imageSql = $imagePath ? ', image_path=?' : '';
-      $imageArg = $imagePath ? [$imagePath] : [];
+      // Keep the image unless it is replaced or explicitly removed.
+      $newImagePath = $imagePath ?: ($removeImage ? null : $currentImagePath);
+      $imageSql = ($imagePath || $removeImage) ? ', image_path=?' : '';
+      $imageArg = ($imagePath || $removeImage) ? [$newImagePath] : [];
       db()->prepare('UPDATE solar_kits SET name=?, slug=?, system_kw=?, kit_type=?, price=?, subsidy=?, monthly_units=?, suits=?, includes=?, is_featured=?, sort_order=?, is_active=1' . $imageSql . ' WHERE id=?')
         ->execute([...$fields, ...$imageArg, $id]);
       flash('success', 'Kit updated.');
@@ -108,6 +115,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($imagePath) {
       db()->prepare('UPDATE products SET name=?, category=?, description=?, specs=?, sort_order=?, brand=?, price=?, mrp=?, wattage=?, warranty_years=?, in_stock=?, image_path=? WHERE id=?')
         ->execute([...$shared, $imagePath, $id]);
+    } elseif ($removeImage) {
+      db()->prepare('UPDATE products SET name=?, category=?, description=?, specs=?, sort_order=?, brand=?, price=?, mrp=?, wattage=?, warranty_years=?, in_stock=?, image_path=NULL WHERE id=?')
+        ->execute([...$shared, $id]);
     } else {
       db()->prepare('UPDATE products SET name=?, category=?, description=?, specs=?, sort_order=?, brand=?, price=?, mrp=?, wattage=?, warranty_years=?, in_stock=? WHERE id=?')
         ->execute([...$shared, $id]);
@@ -239,12 +249,12 @@ require __DIR__ . '/../components/admin-header.php';
   <table class="w-full text-sm min-w-[640px]">
     <thead>
       <tr class="text-left text-gray-500 border-b border-gray-100 bg-gray-50/50">
+        <th class="py-2.5 px-3 whitespace-nowrap">Image</th>
         <th class="py-2.5 px-3 whitespace-nowrap">Name</th>
         <th class="py-2.5 px-3 whitespace-nowrap">Type</th>
         <th class="py-2.5 px-3 whitespace-nowrap">Size / Category</th>
         <th class="py-2.5 px-3 whitespace-nowrap">Price</th>
         <th class="py-2.5 px-3 whitespace-nowrap">Subsidy</th>
-        <th class="py-2.5 px-3 whitespace-nowrap">Image</th>
         <th class="py-2.5 px-3 whitespace-nowrap">Status</th>
         <th class="py-2.5 px-3 whitespace-nowrap">Actions</th>
       </tr>
@@ -252,6 +262,13 @@ require __DIR__ . '/../components/admin-header.php';
     <tbody>
       <?php foreach ($rows as [$row, $kind]): $rowIsKit = $kind === 'kit'; ?>
         <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+          <td class="py-3 px-3 whitespace-nowrap">
+            <?php if ($row['image_path']): ?>
+              <img src="/<?= e($row['image_path']) ?>" alt="" class="h-9 w-12 rounded object-cover">
+            <?php else: ?>
+              <span class="text-xs text-gray-400">None</span>
+            <?php endif; ?>
+          </td>
           <td class="py-3 px-3 font-medium text-gray-900 whitespace-nowrap">
             <?= e($row['name']) ?>
             <?php if ($rowIsKit && $row['is_featured']): ?>
@@ -270,13 +287,6 @@ require __DIR__ . '/../components/admin-header.php';
           </td>
           <td class="py-3 px-3 text-gray-600 whitespace-nowrap"><?= $row['price'] ? '₹' . number_format((float) $row['price']) : '—' ?></td>
           <td class="py-3 px-3 text-gray-600 whitespace-nowrap"><?= $rowIsKit ? '₹' . number_format((float) $row['subsidy']) : '—' ?></td>
-          <td class="py-3 px-3 whitespace-nowrap">
-            <?php if ($row['image_path']): ?>
-              <img src="/<?= e($row['image_path']) ?>" alt="" class="h-9 w-12 rounded object-cover">
-            <?php else: ?>
-              <span class="text-xs text-gray-400">None</span>
-            <?php endif; ?>
-          </td>
           <td class="py-3 px-3 whitespace-nowrap">
             <span class="badge <?= $row['is_active'] ? 'bg-primary-50 text-primary-700' : 'bg-gray-100 text-gray-500' ?>">
               <?= $row['is_active'] ? 'Active' : 'Removed' ?>
@@ -408,6 +418,13 @@ require __DIR__ . '/../components/admin-header.php';
       <div>
         <label class="text-sm font-medium text-gray-700">Image (jpg/png/webp, max 2MB)</label>
         <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" class="input mt-1 w-full">
+        <div id="image-current" class="hidden mt-2 rounded border border-gray-200 img-current-wrapper">
+          <img id="image-preview" src="" alt="Current image" class="h-20 w-20 rounded object-cover">
+          <label class="mt-2 flex items-center gap-2 text-xs text-red-600">
+            <input type="checkbox" name="remove_image" id="image-remove" value="1" class="rounded border-gray-300">
+            Remove current image
+          </label>
+        </div>
         <p id="image-hint" class="mt-1 text-xs text-gray-500">Leave empty to keep the current image.</p>
       </div>
       <div class="flex gap-3 pt-2">
@@ -443,7 +460,11 @@ require __DIR__ . '/../components/admin-header.php';
     document.getElementById('price-label').textContent = isKit ? 'Price before subsidy (₹) *' : 'Price (₹)';
     document.getElementById('product-modal-title').textContent =
       (row ? 'Edit ' : 'Add ') + (isKit ? 'Kit' : 'Component');
-    document.getElementById('image-hint').classList.toggle('hidden', !row);
+    var currentImage = row && row.image_path;
+    document.getElementById('image-hint').classList.toggle('hidden', !currentImage);
+    document.getElementById('image-current').classList.toggle('hidden', !currentImage);
+    document.getElementById('image-remove').checked = false;
+    document.getElementById('image-preview').src = currentImage ? '/' + currentImage : '';
 
     row = row || {};
     set('product-id', row.id || '');

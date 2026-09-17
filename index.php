@@ -73,14 +73,16 @@ require __DIR__ . '/components/header.php';
 <?php $heroSlides = ['/assets/images/hero-image-1.png', '/assets/images/hero-image-2.png', '/assets/images/hero-image-3.png']; ?>
 
 <section id="hero" class="hero-slider-section">
-  <?php // Full-bleed slides behind a fixed-width card floated over their right side. ?>
+  <?php // Full-bleed slides behind a fixed-width card floated over their right side. 
+  ?>
   <div class="hero-slider-wrapper">
     <?php foreach ($heroSlides as $i => $slide): ?>
       <img data-hero-slide src="<?= e($slide) ?>" alt=""
         class="hero-slide-img <?= $i ? 'is-hidden' : 'is-active' ?>">
     <?php endforeach; ?>
 
-    <?php // Gradient overlay for readability on desktop ?>
+    <?php // Gradient overlay for readability on desktop 
+    ?>
     <div class="hero-slider-overlay" role="presentation"></div>
   </div>
 
@@ -214,8 +216,8 @@ require __DIR__ . '/components/header.php';
 
 <section class="bg-primary-50/60 py-20">
   <div class="mx-auto container px-6">
-    <div class="flex flex-wrap items-end justify-between gap-6 mb-12">
-      <div class="max-w-2xl">
+    <div class="flex flex-wrap items-end justify-between gap-6 mb-12 custom-product-header-wrapper">
+      <div class="max-w-2xl custom-product-header">
         <h2 class="text-3xl font-bold text-gray-900">Featured Products</h2>
         <p class="mt-3 text-gray-600">Quality panels, inverters and storage from trusted manufacturers.</p>
       </div>
@@ -226,18 +228,18 @@ require __DIR__ . '/components/header.php';
     <div class="grid gap-8 md:grid-cols-3">
       <?php foreach ($products as $product): ?>
         <a href="/product-details.php?id=<?= (int) $product['id'] ?>" class="card group overflow-hidden p-3 flex flex-col border border-gray-900 shadow-none hover:bg-primary-50 transition-colors">
-          <div class="relative h-52 rounded-2xl bg-gray-100 overflow-hidden">
+          <div class="relative h-52 rounded-2xl bg-gray-100 overflow-hidden custom-product-img">
             <img src="<?= $product['image_path'] ? '/' . e($product['image_path']) : 'https://placehold.co/400x160?text=' . urlencode($product['name']) ?>" class="h-full w-full object-cover" alt="<?= e($product['name']) ?>">
             <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 text-xs font-semibold text-primary-700 shadow-sm">
               <?= e(ucfirst($product['category'])) ?>
             </span>
           </div>
-          <div class="p-4 pb-2 flex flex-col flex-1">
+          <div class="p-4 pb-2 flex flex-col flex-1 custom-product-content">
             <h3 class="font-bold text-gray-900 text-lg leading-snug group-hover:text-primary-700 transition-colors"><?= e($product['name']) ?></h3>
             <p class="mt-2 text-sm text-gray-600 flex-1"><?= e($product['description']) ?></p>
-            <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
-              <span class="text-xs font-medium text-gray-500"><?= e($product['specs']) ?></span>
-              <span class="btn-outline text-sm py-1" style="padding-left: 10px;">
+            <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 custom-product-footer">
+              <span class="text-xs font-medium text-gray-500 span-text"><?= e($product['specs']) ?></span>
+              <span class="btn-outline text-sm py-1 enquiry-btn" style="padding-left: 10px;">
                 Enquire
                 <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
               </span>
@@ -256,7 +258,7 @@ require __DIR__ . '/components/header.php';
       <h2 class="text-3xl font-bold text-gray-900">Complete Solar Kits</h2>
       <p class="mt-3 text-gray-600">Panels, inverter, structure, cabling and paperwork in one price. Subsidy already applied.</p>
     </div>
-    <a href="/products.php?category=kit" class="btn-outline" style="padding-left: 10px;">
+    <a href="/products.php?category=kit" class="btn-outline custom-kit-btn" style="padding-left: 10px;">
       All kits <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
     </a>
   </div>
@@ -266,20 +268,22 @@ require __DIR__ . '/components/header.php';
       $kitNet = (int) ($kit['price'] - $kit['subsidy']);
     ?>
       <a href="/product-details.php?kit=<?= e(rawurlencode($kit['slug'])) ?>"
-        class="card group flex flex-col border border-gray-900 shadow-none hover:bg-primary-50 transition-colors">
+        class="card group flex flex-col border border-gray-900 shadow-none hover:bg-primary-50 transition-colors custom-kit-card">
         <div class="flex items-start justify-between gap-3">
           <h3 class="text-xl font-bold text-gray-900 group-hover:text-primary-700"><?= e($kit['name']) ?></h3>
           <span class="badge shrink-0 bg-primary-50 text-primary-700"><?= e(rtrim(rtrim(number_format((float) $kit['system_kw'], 1), '0'), '.')) ?> kW</span>
         </div>
         <p class="mt-1.5 text-sm text-gray-500"><?= e($kit['suits']) ?></p>
-        <p class="mt-5 text-3xl font-extrabold text-gray-900"><?= e(inr($kitNet)) ?></p>
+        <p class="mt-5 text-3xl font-extrabold text-gray-900 custom-kit-price"><?= e(inr($kitNet)) ?></p>
         <?php if ($kit['subsidy'] > 0): ?>
-          <p class="mt-1 text-sm text-gray-500">
+          <p class="mt-1 text-sm text-gray-500 custom-kit-subsidy">
             <span class="line-through"><?= e(inr((int) $kit['price'])) ?></span>
             <span class="ml-1.5 font-semibold text-primary-700">after subsidy</span>
           </p>
         <?php endif; ?>
-        <p class="mt-4 text-sm text-gray-600 flex-1">Generates ~<?= number_format((int) $kit['monthly_units']) ?> units a month.</p>
+        <p class="mt-4 text-sm text-gray-600 flex-1 custom-kit-units">
+          Generates ~<?= number_format((int) $kit['monthly_units']) ?> units a month.
+        </p>
         <span class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-700">
           See what's included <?= icon('arrow-right', 'h-4 w-4') ?>
         </span>
@@ -353,14 +357,27 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
 </section>
 
 <!-- Why HVU: image left, copy right. -->
-<section class="mx-auto container px-6 py-20">
-  <div class="grid gap-12 md:grid-cols-2 md:items-center">
-    <div class="overflow-hidden rounded-3xl border border-gray-900">
-      <img src="/assets/images/green-hand-with-solar.png" alt="Rooftop solar installation by Hindustan Vidyut Udyog"
-        loading="lazy" class="h-full w-full object-cover aspect-[4/3]">
+<section class="mx-auto container px-6 py-20 custom-why-hvu-section">
+  <div class="grid gap-12 md:grid-cols-2 md:items-center custom-why-hvu">
+    <div class="solar-images-wrapper overflow-hidden">
+
+      <!-- Main Image -->
+      <img
+        src="/assets/images/green-hand-with-solar.png"
+        alt="Rooftop solar installation by Hindustan Vidyut Udyog"
+        loading="lazy"
+        class="h-full w-full object-cover aspect-[4/3] rounded-3xl border border-gray-900"/>
+
+      <!-- Desktop Only Image -->
+      <img
+        src="/assets/images/why-hvu-second-image.png"
+        alt="Solar installation"
+        loading="lazy"
+        class="desktop-solar-image rounded-3xl border border-gray-900"/>
+
     </div>
 
-    <div>
+    <div class="custom-why-hvu-content">
       <span class="inline-flex rounded-full border border-gray-900 px-4 py-1.5 text-sm font-medium text-primary-700">
         Why Hindustan Vidyut Udyog
       </span>
@@ -410,7 +427,7 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
       View All Posts <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
     </a>
   </div>
-  <div class="grid gap-8 md:grid-cols-3">
+  <div class="grid gap-8 md:grid-cols-3 custom-blog-card-wrapper">
     <?php foreach ($posts as $post): ?>
       <a href="/blog-details.php?slug=<?= urlencode($post['slug']) ?>" class="card shimmer group overflow-hidden p-3 flex flex-col border border-gray-900 shadow-none hover:bg-primary-50 transition-colors">
         <div class="relative aspect-video rounded-2xl bg-gray-100 overflow-hidden">
@@ -420,12 +437,12 @@ $copies = max(1, (int) ceil(2560 / $rowWidth)) * 2;
             <?= e(date('M j, Y', strtotime($post['published_at']))) ?>
           </span>
         </div>
-        <div class="p-4 pb-2 flex flex-col flex-1">
+        <div class="p-4 pb-2 flex flex-col flex-1 custom-blog-content">
           <h3 class="font-bold text-gray-900 text-lg leading-snug group-hover:text-primary-700 transition-colors"><?= e($post['title']) ?></h3>
           <p class="mt-2 text-sm text-gray-600 flex-1"><?= e($post['excerpt']) ?></p>
-          <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
+          <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 custom-blog-footer">
             <span class="text-xs font-medium text-gray-500"><?= e($post['author']) ?></span>
-            <span class="btn-outline text-sm py-1" style="padding-left: 10px;">
+            <span class="btn-outline text-sm py-1 custom-blog-read-more" style="padding-left: 10px;">
               Read More
               <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
             </span>

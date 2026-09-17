@@ -93,7 +93,7 @@ $kitYears = $kit
     : null;
 
 $pageTitle = $product['name'] . ' — Price, Specs & Warranty | HVU Solar';
-$metaDescription = mb_substr(trim((string) $product['description']), 0, 155)
+$metaDescription = substr(trim((string) $product['description']), 0, 155)
     ?: 'Buy ' . $product['name'] . ' with installation across Delhi NCR.';
 $ogImage = $product['image_path'] ? '/' . $product['image_path'] : '/assets/images/hero-image-1.png';
 
@@ -360,7 +360,7 @@ require __DIR__ . '/components/header.php';
         </blockquote>
         <figcaption class="mt-6 flex items-center gap-4">
           <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent-500 font-bold text-ink ring-2 ring-accent-400">
-            <?= e(mb_substr($r['author'], 0, 1)) ?>
+            <?= e(substr($r['author'], 0, 1)) ?>
           </span>
           <span>
             <span class="block font-semibold text-white"><?= e($r['author']) ?></span>
@@ -402,7 +402,7 @@ require __DIR__ . '/components/header.php';
             <p class="mt-2 text-sm text-gray-600 flex-1"><?= e($rel['description']) ?></p>
             <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
               <span class="text-xs font-medium text-gray-500"><?= e($relKit ? inr((int) $rel['price']) : (string) $rel['specs']) ?></span>
-              <span class="btn-outline text-sm py-1">
+              <span class="btn-outline text-sm py-1" style="padding-left: 10px;">
                 View
                 <span class="btn-icon"><?= icon('arrow-right', 'h-4 w-4') ?></span>
               </span>
