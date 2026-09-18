@@ -95,35 +95,35 @@ require __DIR__ . '/../components/admin-header.php';
   <table class="w-full text-sm">
     <thead>
       <tr class="text-left text-gray-500 border-b border-gray-100">
-        <th class="py-2 pr-4">Image</th>
-        <th class="py-2 pr-4">Title</th>
-        <th class="py-2 pr-4">Location</th>
-        <th class="py-2 pr-4">Size</th>
-        <th class="py-2 pr-4">Segment</th>
-        <th class="py-2 pr-4">Status</th>
-        <th class="py-2 pr-4">Actions</th>
+        <th class="py-2 pr-4 whitespace-nowrap">Image</th>
+        <th class="py-2 pr-4 whitespace-nowrap">Title</th>
+        <th class="py-2 pr-4 whitespace-nowrap">Location</th>
+        <th class="py-2 pr-4 whitespace-nowrap">Size</th>
+        <th class="py-2 pr-4 whitespace-nowrap">Segment</th>
+        <th class="py-2 pr-4 whitespace-nowrap">Status</th>
+        <th class="py-2 pr-4 whitespace-nowrap">Actions</th>
       </tr>
     </thead>
     <tbody>
       <?php foreach ($projects as $p): ?>
         <tr class="border-b border-gray-50">
-          <td class="py-3 pr-4">
+          <td class="py-3 pr-4 whitespace-nowrap">
             <?php if ($p['image_path']): ?>
               <img src="/<?= e($p['image_path']) ?>" alt="" class="h-9 w-12 rounded object-cover">
             <?php else: ?>
               <span class="text-xs text-gray-400">No Image</span>
             <?php endif; ?>
           </td>
-          <td class="py-3 pr-4 font-medium text-gray-900"><?= e($p['title']) ?></td>
-          <td class="py-3 pr-4 text-gray-600"><?= e($p['location']) ?></td>
-          <td class="py-3 pr-4 text-gray-600"><?= e(rtrim(rtrim(number_format((float) $p['system_kw'], 1), '0'), '.')) ?> kW</td>
-          <td class="py-3 pr-4 text-gray-600"><?= e(ucfirst($p['segment'])) ?></td>
-          <td class="py-3 pr-4">
+          <td class="py-3 pr-4 whitespace-nowrap font-medium text-gray-900"><?= e($p['title']) ?></td>
+          <td class="py-3 pr-4 whitespace-nowrap text-gray-600"><?= e($p['location']) ?></td>
+          <td class="py-3 pr-4 whitespace-nowrap text-gray-600"><?= e(rtrim(rtrim(number_format((float) $p['system_kw'], 1), '0'), '.')) ?> kW</td>
+          <td class="py-3 pr-4 whitespace-nowrap text-gray-600"><?= e(ucfirst($p['segment'])) ?></td>
+          <td class="py-3 pr-4 whitespace-nowrap">
             <span class="badge <?= $p['is_active'] ? 'bg-primary-50 text-primary-700' : 'bg-gray-100 text-gray-500' ?>">
               <?= $p['is_active'] ? 'Active' : 'Removed' ?>
             </span>
           </td>
-          <td class="py-3 pr-4 space-x-2 whitespace-nowrap">
+          <td class="py-3 pr-4 whitespace-nowrap space-x-2 whitespace-nowrap">
             <button onclick='openProjectModal(<?= json_encode($p) ?>)' class="text-primary-600 hover:underline text-xs">Edit</button>
             <?php if ($p['is_active']): ?>
               <form method="post" class="inline">
@@ -152,7 +152,7 @@ require __DIR__ . '/../components/admin-header.php';
             <?php else: ?>
               <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-gray-100 text-center text-[10px] text-gray-400">No Image</div>
             <?php endif; ?>
-            <h3 class="font-medium text-gray-900 text-base leading-snug"><?= e($p['title']) ?></h3>
+            <h3 class="font-medium text-gray-900 text-base leading-snug text-sm"><?= e($p['title']) ?></h3>
           </div>
           <span class="badge shrink-0 <?= $p['is_active'] ? 'bg-primary-50 text-primary-700' : 'bg-gray-100 text-gray-500' ?>">
             <?= $p['is_active'] ? 'Active' : 'Removed' ?>
